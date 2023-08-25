@@ -3,14 +3,13 @@
 
 #include "yakpch.h"
 #include "gfx/mesh.h"
-#include "math/ymath.h"
 
 using EntityId = u64;
 
 struct EntityRegistry {
     u64 entity_count = 0;
 
-    map<std::type_index, map<EntityId, std::any>> components;
+    map<EntityId, map<std::type_index, std::any>> components;
 
     EntityId create() {
         return entity_count++;
@@ -18,17 +17,17 @@ struct EntityRegistry {
 
     template <typename T>
     void add(EntityId id, T &&component) {
-        components[std::type_index(typeid(T))][id] = component;
+        components[id][std::type_index(typeid(T))] = component;
     }
 
     template <typename T>
     bool has(EntityId id) {
-        return components[std::type_index(typeid(T))].contains(id); 
+        return components[id].contains(std::type_index(typeid(T)));
     }
 
     template <typename T>
     T get(EntityId id) {
-        auto comp = components[std::type_index(typeid(T))][id];
+        auto comp = components[id][std::type_index(typeid(T))];
         return std::any_cast<T>(comp);
     }
 };
@@ -69,15 +68,14 @@ struct Scene {
 
     template <typename T>
     array<Entity> get_entities_with_component() {
-        auto components = registry.components[std::type_index(typeid(T))];
-
         array<Entity> entities;
-        entities.reserve(components.size());
 
-        for(auto kv : components) {
-            Entity entity = entity_map.at(kv.first);
-
-            entities.push_back(entity);
+        for (auto kv : registry.components) {
+            EntityId entity = kv.first;
+            
+            if (registry.components[entity].contains(std::type_index(typeid(T)))) {
+                entities.push_back(entity_map.at(entity));
+            }
         }
 
         return entities;

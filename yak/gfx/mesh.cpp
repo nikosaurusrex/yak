@@ -43,10 +43,10 @@ void Meshes::init() {
                         0.0f, 1.0f, 0.0f};
 
 
-    f32 quad_tex_coords[] = {1.0f, 0.0f,
-                            1.0f, 1.0f,
-                            0.0f, 1.0f,
-                            0.0f, 0.0f};
+    f32 quad_tex_coords[] = {1.0f, 1.0f,
+                            1.0f, 0.0f,
+                            0.0f, 0.0f,
+                            0.0f, 1.0f};
 
     u32 quad_indices[] = {0, 1, 3,
                         1, 2, 3};

@@ -1,14 +1,17 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
+#include <glm/glm.hpp>
+
 #include "gfx/mesh.h"
 #include "gfx/texture.h"
-#include "math/ymath.h"
 
 struct TransformComponent {
-    mat4 transform;
+    glm::vec3 translation;
+    glm::vec3 scale;
 
-    TransformComponent(mat4 transform) : transform(transform) {}
+    TransformComponent(glm::vec3 translation, glm::vec3 scale)
+    : translation(translation), scale(scale) {}
 };
 
 struct MeshComponent {

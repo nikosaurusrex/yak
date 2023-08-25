@@ -10,7 +10,6 @@
 #include "gfx/mesh.h"
 #include "gfx/renderer.h"
 #include "gfx/shader.h"
-#include "math/ymath.h"
 
 Engine::Engine(Window *window) : window(window) {
     scene = new Scene();
@@ -41,7 +40,7 @@ void Engine::init() {
 
     Entity entity = scene->create_entity();
     entity.add<MeshComponent>(Meshes::quad);
-    entity.add<TransformComponent>(mat4::translation_scale(50, 50, 100, 100));
+    entity.add<TransformComponent>(TransformComponent(glm::vec3(50, 50, 1), glm::vec3(100, 100, 1)));
     entity.add<TextureComponent>(new Texture("yak/assets/textures/apple.png", GL_RGBA));
 
     layers.add(new GameLayer(scene));

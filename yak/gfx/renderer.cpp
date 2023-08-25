@@ -1,7 +1,8 @@
 #include "renderer.h"
 
+#include <glm/gtx/transform.hpp>
+
 #include "entity/components.h"
-#include "math/ymath.h"
 
 Renderer2D::Renderer2D(Window *window) : window(window) {
 }
@@ -34,9 +35,16 @@ void Renderer2D::render_scene(Scene *scene) {
         shader->use();
 
         if (entity.has<TransformComponent>()) {
-            mat4 model_matrix = entity.get<TransformComponent>().transform;
+            TransformComponent tc = entity.get<TransformComponent>();
 
-            shader->load_matrix("model_mat", &model_matrix);
+            auto model_mat = glm::mat4(1.0);
+            auto translation = tc.translation;
+            auto scale = tc.scale;
+
+            model_mat = glm::translate(model_mat, translation);
+            model_mat = glm::scale(model_mat, scale);
+
+            shader->load_matrix("model_mat", model_mat);
         }
 
         Mesh *mesh = entity.get<MeshComponent>().mesh;
@@ -52,6 +60,6 @@ void Renderer2D::end() {
 void Renderer2D::resize(s32 width, s32 height) {
     glViewport(0, 0, width, height);
     
-    mat4 proj_matrix = mat4::orthographic(0, width, 0, height, -1, 1);
-    Shaders::load_for_all("proj_mat", &proj_matrix);
+    glm::mat4 proj_matrix = glm::ortho<f32>(0, width, 0, height, -1, 1);
+    Shaders::load_for_all("proj_mat", proj_matrix);
 }

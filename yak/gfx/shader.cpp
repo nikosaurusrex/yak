@@ -1,5 +1,7 @@
 #include "shader.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include "utility/io.h"
 #include "utility/opengl.h"
 
@@ -108,9 +110,9 @@ GLint Shader::get_uniform_location(string name) {
     return location;
 }
 
-void Shader::load_matrix(string name, mat4 *matrix) {
+void Shader::load_matrix(string name, glm::mat4 matrix) {
     GLint location = get_uniform_location(name);
-    glUniformMatrix4fv(location, 1, GL_FALSE, (GLfloat *)&matrix->data[0]);
+    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 Shader *Shaders::simple = 0;
@@ -125,7 +127,7 @@ void Shaders::free() {
     delete Shaders::simple;
 }
 
-void Shaders::load_for_all(string name, mat4 *mat) {
+void Shaders::load_for_all(string name, glm::mat4 mat) {
     Shaders::simple->use();
     Shaders::simple->load_matrix(name, mat);
 

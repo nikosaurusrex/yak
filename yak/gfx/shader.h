@@ -3,7 +3,7 @@
 
 #include "yakpch.h"
 
-#include "math/ymath.h"
+#include <glm/glm.hpp>
 
 struct Shader {
     map<string, GLint> location_cache;
@@ -20,7 +20,7 @@ struct Shader {
     void use();
 
     GLint get_uniform_location(string name);
-    void load_matrix(string name, mat4 *matrix);
+    void load_matrix(string name, glm::mat4 matrix);
 };
 
 struct Shaders {
@@ -30,7 +30,7 @@ struct Shaders {
     static void init();
     static void free();
 
-    static void load_for_all(string name, mat4 *mat);
+    static void load_for_all(string name, glm::mat4 mat);
 };
 
 #endif

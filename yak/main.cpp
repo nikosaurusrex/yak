@@ -1,7 +1,5 @@
 #include "yakpch.h"
 
-#include "core/engine.h"
-#include "core/window.h"
 #include "editor/editor.h"
 
 int main(int argc, char *argv[]) {
