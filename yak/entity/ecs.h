@@ -2,22 +2,28 @@
 #define ECS_H
 
 #include "yakpch.h"
+
+#include "entity/components.h"
 #include "gfx/mesh.h"
 
 using EntityId = u64;
 
 struct EntityRegistry {
-    u64 entity_count = 0;
+    u64 entity_id_counter = 1;
 
     map<EntityId, map<std::type_index, std::any>> components;
 
     EntityId create() {
-        return entity_count++;
+        return entity_id_counter++;
     }
 
     template <typename T>
     void add(EntityId id, T &&component) {
         components[id][std::type_index(typeid(T))] = component;
+    }
+
+    void remove(EntityId id) {
+        components.erase(id);
     }
 
     template <typename T>
@@ -59,11 +65,19 @@ struct Scene {
     EntityRegistry registry;
     map<EntityId, Entity> entity_map;
 
-    Entity create_entity() {
+    Entity create_entity(string tag) {
         EntityId id = registry.create();
         Entity entity = {&this->registry, id};
+
+        entity.add<TagComponent>(tag);
+
         entity_map.insert({id, entity});
         return entity;
+    }
+
+    void destroy_entity(EntityId id) {
+        entity_map.erase(id);
+        registry.remove(id);
     }
 
     template <typename T>
@@ -76,6 +90,16 @@ struct Scene {
             if (registry.components[entity].contains(std::type_index(typeid(T)))) {
                 entities.push_back(entity_map.at(entity));
             }
+        }
+
+        return entities;
+    }
+
+    array<Entity> get_entities() {
+        array<Entity> entities;
+
+        for (auto kv : registry.components) {
+            entities.push_back(entity_map.at(kv.first));
         }
 
         return entities;

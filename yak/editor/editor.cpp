@@ -6,6 +6,7 @@
 
 #include "core/engine.h"
 #include "core/window.h"
+#include "entity/components.h"
 #include "gfx/renderer.h"
 #include "gfx/texture.h"
 
@@ -28,6 +29,8 @@ void RendererImGui::init() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 16);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -38,6 +41,36 @@ void RendererImGui::init() {
         style.WindowRounding = 0.0f;
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
+
+    auto& colors = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
+
+    // Headers
+    colors[ImGuiCol_Header] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+    colors[ImGuiCol_HeaderHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+    colors[ImGuiCol_HeaderActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    
+    // Buttons
+    colors[ImGuiCol_Button] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+    colors[ImGuiCol_ButtonHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+    colors[ImGuiCol_ButtonActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+    // Frame BG
+    colors[ImGuiCol_FrameBg] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+    colors[ImGuiCol_FrameBgHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
+    colors[ImGuiCol_FrameBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+
+    // Tabs
+    colors[ImGuiCol_Tab] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_TabHovered] = ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
+    colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
+    colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+
+    // Title
+    colors[ImGuiCol_TitleBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window->handle, true);
@@ -86,11 +119,6 @@ void Editor::run() {
     while (engine->running) {
         engine->update();
 
-        framebuffer->bind();
-        glClear(GL_COLOR_BUFFER_BIT);
-        engine->render();
-        framebuffer->unbind();
-
         render();
 
         if (!window->update()) {
@@ -110,6 +138,8 @@ void Editor::render() {
 
     ImGui::SetNextWindowDockID(dockspace);
     render_scene();
+    
+    render_scene_hierarchy();
 
     renderer->end();
 }
@@ -133,6 +163,11 @@ void Editor::render_scene() {
 
     engine->renderer_2d->resize(width, height);
 
+    framebuffer->bind();
+    glClear(GL_COLOR_BUFFER_BIT);
+    engine->render();
+    framebuffer->unbind();
+
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImGui::GetWindowDrawList()->AddImage(
         (void *)framebuffer->texture_id, 
@@ -142,6 +177,55 @@ void Editor::render_scene() {
         ImVec2(1, 0)
     );
 	ImGui::End();
+}
+
+void Editor::render_scene_hierarchy() {
+    ImGui::Begin("Scene Hierarchy");
+
+    auto entities = engine->scene->get_entities();  
+    for (auto entity : entities) {
+        string tag = entity.get<TagComponent>().tag;
+
+        ImGuiTreeNodeFlags flags = ((selection == entity.id) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, tag.data());
+		if (ImGui::IsItemClicked()) {
+			selection = entity.id;
+		}
+
+        bool deleted = false;
+		if (ImGui::BeginPopupContextItem()) {
+			if (ImGui::MenuItem("Delete Entity"))
+				deleted = true;
+
+			ImGui::EndPopup();
+		}
+
+        if (opened) {
+			ImGui::TreePop();
+		}
+
+        if (deleted) {
+            engine->scene->destroy_entity(entity.id);
+            
+            if (selection == entity.id)
+                selection = 0;
+        }
+    }
+
+    if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+        selection = 0;
+
+    ImGuiPopupFlags popup_flags = ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems;
+    if (ImGui::BeginPopupContextWindow(0, popup_flags)) {
+        if (ImGui::MenuItem("Create Empty"))
+            engine->scene->create_entity("Empty Entity");
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::End();
 }
 
 void Editor::handle_event(Event event) {

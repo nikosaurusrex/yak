@@ -3,6 +3,7 @@
 
 #include "core/event.h"
 
+using EntityId = u64;
 struct Window;
 struct RendererImGui {
     Window *window;
@@ -23,6 +24,7 @@ struct Editor : public EventHandler {
     Window *window;
     RendererImGui *renderer;
     Framebuffer *framebuffer;
+    EntityId selection;
 
     Editor(Window *window);
     ~Editor();
@@ -33,6 +35,7 @@ struct Editor : public EventHandler {
     void render();
     void render_menu();
     void render_scene();
+    void render_scene_hierarchy();
 
     virtual void handle_event(Event event) override;
 };

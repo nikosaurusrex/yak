@@ -6,6 +6,13 @@
 #include "gfx/mesh.h"
 #include "gfx/texture.h"
 
+struct TagComponent {
+    string tag;
+
+    TagComponent(string tag) : tag(tag) {}
+    TagComponent(const char *str) : tag(str) {}
+};
+
 struct TransformComponent {
     glm::vec3 translation;
     glm::vec3 scale;
