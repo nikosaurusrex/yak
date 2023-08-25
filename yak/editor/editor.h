@@ -36,6 +36,8 @@ struct Editor : public EventHandler {
     void render_menu();
     void render_scene();
     void render_scene_hierarchy();
+    void render_properties();
+    void render_content_browser();
 
     virtual void handle_event(Event event) override;
 };

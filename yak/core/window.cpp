@@ -54,6 +54,13 @@ bool Window::update() {
     return !glfwWindowShouldClose(handle);
 }
 
+void Window::expand() {
+    GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+    const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+ 
+    glfwSetWindowMonitor(handle, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+}
+
 void Window::destroy() {
     glfwDestroyWindow(handle);
     glfwTerminate();

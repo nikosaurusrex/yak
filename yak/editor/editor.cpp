@@ -30,7 +30,7 @@ void RendererImGui::init() {
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 16);
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 22);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -140,6 +140,8 @@ void Editor::render() {
     render_scene();
     
     render_scene_hierarchy();
+    render_properties();
+    render_content_browser();
 
     renderer->end();
 }
@@ -189,7 +191,7 @@ void Editor::render_scene_hierarchy() {
         ImGuiTreeNodeFlags flags = ((selection == entity.id) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
-        bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, tag.data());
+        bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, "%s", tag.data());
 		if (ImGui::IsItemClicked()) {
 			selection = entity.id;
 		}
@@ -228,6 +230,25 @@ void Editor::render_scene_hierarchy() {
     ImGui::End();
 }
 
+void Editor::render_properties() {
+    ImGui::Begin("Properties");
+
+    if (!selection) {
+        ImGui::End();
+        return;
+    }
+
+
+
+    ImGui::End();
+}
+
+void Editor::render_content_browser() {
+    ImGui::Begin("Content Browser");
+
+    ImGui::End();
+}
+
 void Editor::handle_event(Event event) {
     switch (event.type) {
         case Event::RESIZE: {
@@ -244,6 +265,7 @@ void run_editor() {
 
     editor.init();
     window->set_event_handler(&editor);
+    window->expand();
     editor.run();
 }
 

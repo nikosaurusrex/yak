@@ -15,6 +15,7 @@ struct Window {
     void init();
     void create();
     bool update();
+    void expand();
     void destroy();
 
     void set_event_handler(EventHandler *handler);
