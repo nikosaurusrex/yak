@@ -25,7 +25,9 @@ void RendererImGui::init() {
 
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Multi-Viewport / Platform Windows
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -102,18 +104,29 @@ void Editor::run() {
 void Editor::render() {
     renderer->begin();
 
-    ImGui::Begin("Dockspace");
+    ImGuiID dockspace = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
-    if (ImGui::BeginMenuBar()) {
+    render_menu();
+
+    ImGui::SetNextWindowDockID(dockspace);
+    render_scene();
+
+    renderer->end();
+}
+
+void Editor::render_menu() {
+    if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Files")) {
             if (ImGui::MenuItem("Exit")) engine->stop();
 
             ImGui::EndMenu();
         }
 
-        ImGui::EndMenuBar();
+        ImGui::EndMainMenuBar();
     } 
+}
 
+void Editor::render_scene() {
     ImGui::Begin("Scene");
     s32 width = ImGui::GetContentRegionAvail().x;
     s32 height = ImGui::GetContentRegionAvail().y;
@@ -129,10 +142,6 @@ void Editor::render() {
         ImVec2(1, 0)
     );
 	ImGui::End();
-
-    ImGui::End();
-
-    renderer->end();
 }
 
 void Editor::handle_event(Event event) {
