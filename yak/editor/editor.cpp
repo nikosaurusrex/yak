@@ -11,7 +11,7 @@
 #include "gfx/texture.h"
 
 RendererImGui::RendererImGui(Window *window) : window(window) {
-
+    
 }
 
 RendererImGui::~RendererImGui() {
@@ -95,13 +95,105 @@ void RendererImGui::end() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+SceneHierarchy::SceneHierarchy(EntityId *selection)
+    : selection(selection) {
+}
+
+void SceneHierarchy::render(Scene *scene) {
+    ImGui::Begin("Scene Hierarchy");
+
+    auto entities = scene->get_entities();  
+    for (auto entity : entities) {
+        string tag = entity.get<TagComponent>().tag;
+
+        ImGuiTreeNodeFlags flags = ((*selection == entity.id) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, "%s", tag.data());
+		if (ImGui::IsItemClicked()) {
+			*selection = entity.id;
+		}
+
+        bool deleted = false;
+		if (ImGui::BeginPopupContextItem()) {
+			if (ImGui::MenuItem("Delete Entity"))
+				deleted = true;
+
+			ImGui::EndPopup();
+		}
+
+        if (opened) {
+			ImGui::TreePop();
+		}
+
+        if (deleted) {
+            scene->destroy_entity(entity.id);
+            
+            if (*selection == entity.id)
+                *selection = 0;
+        }
+    }
+
+    if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+        *selection = 0;
+
+    ImGuiPopupFlags popup_flags = ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems;
+    if (ImGui::BeginPopupContextWindow(0, popup_flags)) {
+        if (ImGui::MenuItem("Create Empty"))
+            scene->create_entity("Empty Entity");
+
+        ImGui::EndPopup();
+    }
+
+    ImGui::End();
+}
+
+void PropertiesPanel::render(Scene *scene, EntityId selection) {
+    ImGui::Begin("Properties");
+
+    if (!selection) {
+        ImGui::End();
+        return;
+    }
+
+    Entity entity = scene->from_id(selection); 
+    string &tag = entity.get<TagComponent>().tag;
+    static char buf[255];
+    strcpy(buf, tag.data());
+    if (ImGui::InputText("Tag", buf, sizeof(buf))) {
+        tag = string(buf);
+    }
+
+    ImGuiTreeNodeFlags tn_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+    bool open = ImGui::TreeNodeEx((void *)5125123, tn_flags, "Bye");
+    if (open) {
+        ImGui::TreePop(); 
+    }
+
+    ImGui::Button("Add Component");
+
+    ImGui::End();
+}
+
+void ContentBrowser::render() {
+    ImGui::Begin("Content Browser");
+
+    ImGui::End();
+}
+
 Editor::Editor(Window *window) : window(window) {
     engine = new Engine(window);
     renderer = new RendererImGui(window);
+    scene_hierarchy = new SceneHierarchy(&selection);
+    properties_panel = new PropertiesPanel();
+    content_browser = new ContentBrowser();
 }
 Editor::~Editor() {
     delete engine;
     delete renderer;
+    delete scene_hierarchy;
+    delete properties_panel;
+    delete content_browser;
     delete framebuffer;
 }
 
@@ -138,10 +230,10 @@ void Editor::render() {
 
     ImGui::SetNextWindowDockID(dockspace);
     render_scene();
-    
-    render_scene_hierarchy();
-    render_properties();
-    render_content_browser();
+
+    scene_hierarchy->render(engine->scene);
+    properties_panel->render(engine->scene, selection);
+    content_browser->render();
 
     renderer->end();
 }
@@ -179,74 +271,6 @@ void Editor::render_scene() {
         ImVec2(1, 0)
     );
 	ImGui::End();
-}
-
-void Editor::render_scene_hierarchy() {
-    ImGui::Begin("Scene Hierarchy");
-
-    auto entities = engine->scene->get_entities();  
-    for (auto entity : entities) {
-        string tag = entity.get<TagComponent>().tag;
-
-        ImGuiTreeNodeFlags flags = ((selection == entity.id) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-
-        bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, "%s", tag.data());
-		if (ImGui::IsItemClicked()) {
-			selection = entity.id;
-		}
-
-        bool deleted = false;
-		if (ImGui::BeginPopupContextItem()) {
-			if (ImGui::MenuItem("Delete Entity"))
-				deleted = true;
-
-			ImGui::EndPopup();
-		}
-
-        if (opened) {
-			ImGui::TreePop();
-		}
-
-        if (deleted) {
-            engine->scene->destroy_entity(entity.id);
-            
-            if (selection == entity.id)
-                selection = 0;
-        }
-    }
-
-    if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-        selection = 0;
-
-    ImGuiPopupFlags popup_flags = ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems;
-    if (ImGui::BeginPopupContextWindow(0, popup_flags)) {
-        if (ImGui::MenuItem("Create Empty"))
-            engine->scene->create_entity("Empty Entity");
-
-        ImGui::EndPopup();
-    }
-
-    ImGui::End();
-}
-
-void Editor::render_properties() {
-    ImGui::Begin("Properties");
-
-    if (!selection) {
-        ImGui::End();
-        return;
-    }
-
-
-
-    ImGui::End();
-}
-
-void Editor::render_content_browser() {
-    ImGui::Begin("Content Browser");
-
-    ImGui::End();
 }
 
 void Editor::handle_event(Event event) {

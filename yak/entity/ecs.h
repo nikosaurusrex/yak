@@ -32,9 +32,8 @@ struct EntityRegistry {
     }
 
     template <typename T>
-    T get(EntityId id) {
-        auto comp = components[id][std::type_index(typeid(T))];
-        return std::any_cast<T>(comp);
+    T &get(EntityId id) {
+        return std::any_cast<T &>(components[id][std::type_index(typeid(T))]);
     }
 };
 
@@ -56,7 +55,7 @@ struct Entity {
     }
 
     template <typename T>
-    T get() {
+    T &get() {
         return registry->get<T>(id);
     }
 };
@@ -103,6 +102,10 @@ struct Scene {
         }
 
         return entities;
+    }
+
+    Entity from_id(EntityId id) {
+        return entity_map.at(id);
     }
 };
 

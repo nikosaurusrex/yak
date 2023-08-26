@@ -2,6 +2,7 @@
 #define GUI_H
 
 #include "core/event.h"
+#include "entity/ecs.h"
 
 using EntityId = u64;
 struct Window;
@@ -19,11 +20,31 @@ struct RendererImGui {
 
 struct Engine;
 struct Framebuffer;
+
+struct SceneHierarchy {
+    EntityId *selection;
+
+    SceneHierarchy(EntityId *id);
+
+    void render(Scene *scene);
+};
+
+struct PropertiesPanel {
+    void render(Scene *scene, EntityId selection);
+};
+
+struct ContentBrowser {
+    void render();
+};
+
 struct Editor : public EventHandler {
     Engine *engine;
     Window *window;
     RendererImGui *renderer;
     Framebuffer *framebuffer;
+    SceneHierarchy *scene_hierarchy;
+    PropertiesPanel *properties_panel;
+    ContentBrowser *content_browser;
     EntityId selection;
 
     Editor(Window *window);
@@ -35,9 +56,9 @@ struct Editor : public EventHandler {
     void render();
     void render_menu();
     void render_scene();
-    void render_scene_hierarchy();
-    void render_properties();
-    void render_content_browser();
+
+    bool property_begin_component();
+    void property_end_component(bool open);
 
     virtual void handle_event(Event event) override;
 };
