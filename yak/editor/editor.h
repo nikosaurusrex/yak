@@ -3,6 +3,7 @@
 
 #include "core/event.h"
 #include "entity/ecs.h"
+#include "entity/scene.h"
 
 using EntityId = u64;
 struct Window;

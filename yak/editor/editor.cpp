@@ -353,8 +353,10 @@ void Editor::render_menu() {
 
 void Editor::render_scene() {
     ImGui::Begin("Scene");
-    s32 width = ImGui::GetContentRegionAvail().x;
-    s32 height = ImGui::GetContentRegionAvail().y;
+
+    ImVec2 region = ImGui::GetContentRegionAvail();
+    s32 width = (s32) region.x;
+    s32 height = (s32) region.y;
 
     engine->renderer_2d->resize(width, height);
 

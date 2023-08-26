@@ -5,6 +5,7 @@
 
 #include "core/window.h"
 #include "entity/ecs.h"
+#include "entity/scene.h"
 #include "gfx/mesh.h"
 #include "gfx/shader.h"
 #include "gfx/texture.h"

@@ -6,7 +6,6 @@
 #include "core/game.h"
 #include "core/window.h"
 #include "entity/components.h"
-#include "entity/ecs.h"
 #include "gfx/mesh.h"
 #include "gfx/renderer.h"
 #include "gfx/shader.h"

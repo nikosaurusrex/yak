@@ -1,8 +1,9 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
-#include "core/event.h"
 #include "core/layer.h"
+#include "core/event.h"
+#include "entity/scene.h"
 
 struct Scene;
 struct Window;
