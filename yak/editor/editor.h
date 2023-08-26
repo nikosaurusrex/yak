@@ -22,15 +22,23 @@ struct Engine;
 struct Framebuffer;
 
 struct SceneHierarchy {
-    EntityId *selection;
+    Entity *selection;
 
-    SceneHierarchy(EntityId *id);
+    SceneHierarchy(Entity *selection);
 
     void render(Scene *scene);
 };
 
 struct PropertiesPanel {
-    void render(Scene *scene, EntityId selection);
+    void render(Scene *scene, Entity entity);
+
+    void render_components(Entity entity);
+
+    template <typename T, typename Callback>
+    void render_component(Entity entity, string name, Callback callback);
+
+    template <typename T>
+    void render_add_component(Entity entity, string name);
 };
 
 struct ContentBrowser {
@@ -45,7 +53,7 @@ struct Editor : public EventHandler {
     SceneHierarchy *scene_hierarchy;
     PropertiesPanel *properties_panel;
     ContentBrowser *content_browser;
-    EntityId selection;
+    Entity selection;
 
     Editor(Window *window);
     ~Editor();

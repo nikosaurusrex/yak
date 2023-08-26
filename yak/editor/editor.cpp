@@ -11,7 +11,6 @@
 #include "gfx/texture.h"
 
 RendererImGui::RendererImGui(Window *window) : window(window) {
-    
 }
 
 RendererImGui::~RendererImGui() {
@@ -30,47 +29,85 @@ void RendererImGui::init() {
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 22);
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 18);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-    ImGuiStyle& style = ImGui::GetStyle();
-    if (io.ConfigFlags) {
-        style.WindowRounding = 0.0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-    }
+    auto &colors = ImGui::GetStyle().Colors;
+    colors[ImGuiCol_WindowBg] = ImVec4{0.1f, 0.1f, 0.13f, 1.0f};
+    colors[ImGuiCol_MenuBarBg] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
 
-    auto& colors = ImGui::GetStyle().Colors;
-    colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };
+    // Border
+    colors[ImGuiCol_Border] = ImVec4{0.44f, 0.37f, 0.61f, 0.29f};
+    colors[ImGuiCol_BorderShadow] = ImVec4{0.0f, 0.0f, 0.0f, 0.24f};
+
+    // Text
+    colors[ImGuiCol_Text] = ImVec4{1.0f, 1.0f, 1.0f, 1.0f};
+    colors[ImGuiCol_TextDisabled] = ImVec4{0.5f, 0.5f, 0.5f, 1.0f};
 
     // Headers
-    colors[ImGuiCol_Header] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
-    colors[ImGuiCol_HeaderHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
-    colors[ImGuiCol_HeaderActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-    
+    colors[ImGuiCol_Header] = ImVec4{0.13f, 0.13f, 0.17, 1.0f};
+    colors[ImGuiCol_HeaderHovered] = ImVec4{0.19f, 0.2f, 0.25f, 1.0f};
+    colors[ImGuiCol_HeaderActive] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+
     // Buttons
-    colors[ImGuiCol_Button] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
-    colors[ImGuiCol_ButtonHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
-    colors[ImGuiCol_ButtonActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_Button] = ImVec4{0.13f, 0.13f, 0.17, 1.0f};
+    colors[ImGuiCol_ButtonHovered] = ImVec4{0.19f, 0.2f, 0.25f, 1.0f};
+    colors[ImGuiCol_ButtonActive] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+    colors[ImGuiCol_CheckMark] = ImVec4{0.74f, 0.58f, 0.98f, 1.0f};
+
+    // Popups
+    colors[ImGuiCol_PopupBg] = ImVec4{0.1f, 0.1f, 0.13f, 0.92f};
+
+    // Slider
+    colors[ImGuiCol_SliderGrab] = ImVec4{0.44f, 0.37f, 0.61f, 0.54f};
+    colors[ImGuiCol_SliderGrabActive] = ImVec4{0.74f, 0.58f, 0.98f, 0.54f};
 
     // Frame BG
-    colors[ImGuiCol_FrameBg] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
-    colors[ImGuiCol_FrameBgHovered] = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };
-    colors[ImGuiCol_FrameBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_FrameBg] = ImVec4{0.13f, 0.13, 0.17, 1.0f};
+    colors[ImGuiCol_FrameBgHovered] = ImVec4{0.19f, 0.2f, 0.25f, 1.0f};
+    colors[ImGuiCol_FrameBgActive] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
 
     // Tabs
-    colors[ImGuiCol_Tab] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-    colors[ImGuiCol_TabHovered] = ImVec4{ 0.38f, 0.3805f, 0.381f, 1.0f };
-    colors[ImGuiCol_TabActive] = ImVec4{ 0.28f, 0.2805f, 0.281f, 1.0f };
-    colors[ImGuiCol_TabUnfocused] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4{ 0.2f, 0.205f, 0.21f, 1.0f };
+    colors[ImGuiCol_Tab] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+    colors[ImGuiCol_TabHovered] = ImVec4{0.24, 0.24f, 0.32f, 1.0f};
+    colors[ImGuiCol_TabActive] = ImVec4{0.2f, 0.22f, 0.27f, 1.0f};
+    colors[ImGuiCol_TabUnfocused] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+    colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
 
     // Title
-    colors[ImGuiCol_TitleBg] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-    colors[ImGuiCol_TitleBgActive] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-    colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
+    colors[ImGuiCol_TitleBg] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+    colors[ImGuiCol_TitleBgActive] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+    colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+
+    // Scrollbar
+    colors[ImGuiCol_ScrollbarBg] = ImVec4{0.1f, 0.1f, 0.13f, 1.0f};
+    colors[ImGuiCol_ScrollbarGrab] = ImVec4{0.16f, 0.16f, 0.21f, 1.0f};
+    colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4{0.19f, 0.2f, 0.25f, 1.0f};
+    colors[ImGuiCol_ScrollbarGrabActive] = ImVec4{0.24f, 0.24f, 0.32f, 1.0f};
+
+    // Seperator
+    colors[ImGuiCol_Separator] = ImVec4{0.44f, 0.37f, 0.61f, 1.0f};
+    colors[ImGuiCol_SeparatorHovered] = ImVec4{0.74f, 0.58f, 0.98f, 1.0f};
+    colors[ImGuiCol_SeparatorActive] = ImVec4{0.84f, 0.58f, 1.0f, 1.0f};
+
+    // Resize Grip
+    colors[ImGuiCol_ResizeGrip] = ImVec4{0.44f, 0.37f, 0.61f, 0.29f};
+    colors[ImGuiCol_ResizeGripHovered] = ImVec4{0.74f, 0.58f, 0.98f, 0.29f};
+    colors[ImGuiCol_ResizeGripActive] = ImVec4{0.84f, 0.58f, 1.0f, 0.29f};
+
+    // Docking
+    colors[ImGuiCol_DockingPreview] = ImVec4{0.44f, 0.37f, 0.61f, 1.0f};
+
+    auto &style = ImGui::GetStyle();
+    style.TabRounding = 4;
+    style.ScrollbarRounding = 9;
+    style.WindowRounding = 7;
+    style.GrabRounding = 3;
+    style.FrameRounding = 3;
+    style.PopupRounding = 4;
+    style.ChildRounding = 4;
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window->handle, true);
@@ -95,7 +132,7 @@ void RendererImGui::end() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-SceneHierarchy::SceneHierarchy(EntityId *selection)
+SceneHierarchy::SceneHierarchy(Entity *selection)
     : selection(selection) {
 }
 
@@ -106,12 +143,12 @@ void SceneHierarchy::render(Scene *scene) {
     for (auto entity : entities) {
         string tag = entity.get<TagComponent>().tag;
 
-        ImGuiTreeNodeFlags flags = ((*selection == entity.id) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+        ImGuiTreeNodeFlags flags = ((*selection == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
         bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, "%s", tag.data());
 		if (ImGui::IsItemClicked()) {
-			*selection = entity.id;
+			*selection = entity;
 		}
 
         bool deleted = false;
@@ -129,13 +166,13 @@ void SceneHierarchy::render(Scene *scene) {
         if (deleted) {
             scene->destroy_entity(entity.id);
             
-            if (*selection == entity.id)
-                *selection = 0;
+            if (*selection == entity)
+                *selection = {};
         }
     }
 
     if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-        *selection = 0;
+        *selection = {};
 
     ImGuiPopupFlags popup_flags = ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems;
     if (ImGui::BeginPopupContextWindow(0, popup_flags)) {
@@ -148,15 +185,14 @@ void SceneHierarchy::render(Scene *scene) {
     ImGui::End();
 }
 
-void PropertiesPanel::render(Scene *scene, EntityId selection) {
+void PropertiesPanel::render(Scene *scene, Entity entity) {
     ImGui::Begin("Properties");
 
-    if (!selection) {
+    if (!entity) {
         ImGui::End();
         return;
     }
 
-    Entity entity = scene->from_id(selection); 
     string &tag = entity.get<TagComponent>().tag;
     static char buf[255];
     strcpy(buf, tag.data());
@@ -164,15 +200,83 @@ void PropertiesPanel::render(Scene *scene, EntityId selection) {
         tag = string(buf);
     }
 
-    ImGuiTreeNodeFlags tn_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-    bool open = ImGui::TreeNodeEx((void *)5125123, tn_flags, "Bye");
-    if (open) {
-        ImGui::TreePop(); 
-    }
+    render_components(entity);
+    
+    ImGui::PushItemWidth(-1);
+    if (ImGui::Button("Add Component", ImVec2(-1.0f, 0.0f)))
+        ImGui::OpenPopup("AddComponent");
 
-    ImGui::Button("Add Component");
+    if (ImGui::BeginPopup("AddComponent")) {
+
+        render_add_component<TransformComponent>(entity, "Transform");
+        render_add_component<MeshComponent>(entity, "Mesh");
+        render_add_component<TextureComponent>(entity, "Texture");
+
+        ImGui::EndPopup();
+    }
+	ImGui::PopItemWidth();
 
     ImGui::End();
+
+}
+
+void PropertiesPanel::render_components(Entity entity) {
+    render_component<TransformComponent>(entity, "Transform", [](auto &component) {
+        ImGui::DragFloat3("Position", &component.translation.x);
+        ImGui::DragFloat3("Scale", &component.scale.x);
+    });
+
+    render_component<MeshComponent>(entity, "Mesh", [](auto &component) {
+        const char* mesh_items[] = { "Quad" };
+        static int mesh_item_current = 0;
+        ImGui::Combo("Form", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items));        
+        
+        component.mesh = Meshes::meshes[mesh_item_current];
+    });
+
+    render_component<TextureComponent>(entity, "Texture", [](auto &component) {
+        
+    });
+}
+
+template <typename T, typename Callback>
+void PropertiesPanel::render_component(Entity entity, string name, Callback callback) {
+    ImGuiTreeNodeFlags tn_flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
+    if (entity.has<T>()) {
+        auto &component = entity.get<T>();
+
+        ImVec2 region = ImGui::GetContentRegionAvail();
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+        ImGui::Separator();
+        bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), tn_flags, "%s", name.data());
+        ImGui::PopStyleVar();
+
+        f32 remove_button_size = 22.0f + 4.0f * 2.0f;
+        ImGui::SameLine(region.x - remove_button_size * 0.5f);
+        bool remove = false;
+        if (ImGui::Button("-", ImVec2{ remove_button_size, remove_button_size })) {
+            remove = true;
+        }
+
+        if (open) {
+            callback(component);
+
+            ImGui::TreePop();
+        }
+
+        if (remove)
+            entity.remove<T>();
+    }
+}
+
+template <typename T>
+void PropertiesPanel::render_add_component(Entity entity, string name) {
+    if (!entity.has<T>()) {
+        if (ImGui::MenuItem(name.data())) {
+            entity.add<T>(T());
+            ImGui::CloseCurrentPopup();
+        }
+    } 
 }
 
 void ContentBrowser::render() {
@@ -284,12 +388,12 @@ void Editor::handle_event(Event event) {
 }
 
 void run_editor() {
-    Window *window = new Window("Engine", 800, 600);
+    Window *window = new Window("Engine", 1920, 1080);
     Editor editor(window);
 
     editor.init();
     window->set_event_handler(&editor);
-    window->expand();
+    // window->expand();
     editor.run();
 }
 

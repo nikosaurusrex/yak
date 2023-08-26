@@ -34,6 +34,7 @@ void Mesh::render() {
     glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, 0);
 }
 
+Mesh *Meshes::meshes[1] = {};
 Mesh *Meshes::quad = 0;
 
 void Meshes::init() {
@@ -52,6 +53,8 @@ void Meshes::init() {
                         1, 2, 3};
 
     Meshes::quad = new Mesh(&quad_vertices[0], 12, &quad_tex_coords[0], 8, &quad_indices[0], 6);
+
+    Meshes::meshes[0] = quad;
 }
 
 void Meshes::free() {

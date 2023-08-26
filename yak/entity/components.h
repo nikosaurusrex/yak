@@ -17,6 +17,11 @@ struct TransformComponent {
     glm::vec3 translation;
     glm::vec3 scale;
 
+    TransformComponent() {
+        translation = glm::vec3(0.0f);
+        scale = glm::vec3(1.0f);
+    }
+
     TransformComponent(glm::vec3 translation, glm::vec3 scale)
     : translation(translation), scale(scale) {}
 };
@@ -24,11 +29,19 @@ struct TransformComponent {
 struct MeshComponent {
     Mesh *mesh;
 
+    MeshComponent() {
+        mesh = Meshes::quad;
+    }
+
     MeshComponent(Mesh *mesh) : mesh(mesh) {};
 };
 
 struct TextureComponent {
     Texture *texture;
+
+    TextureComponent() {
+        texture = 0;
+    }
 
     TextureComponent(Texture *texture) : texture(texture) {};
 };

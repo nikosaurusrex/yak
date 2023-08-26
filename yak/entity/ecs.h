@@ -22,7 +22,12 @@ struct EntityRegistry {
         components[id][std::type_index(typeid(T))] = component;
     }
 
+    template <typename T>
     void remove(EntityId id) {
+        components[id].erase(std::type_index(typeid(T)));
+    }
+
+    void erase(EntityId id) {
         components.erase(id);
     }
 
@@ -39,7 +44,7 @@ struct EntityRegistry {
 
 struct Entity {
     EntityRegistry *registry;
-    EntityId id;
+    EntityId id = 0;
 
     Entity() = default;
     Entity(EntityRegistry *registry, EntityId id) : registry(registry), id(id) {}
@@ -50,6 +55,11 @@ struct Entity {
     }
 
     template <typename T>
+    void remove() {
+        registry->remove<T>(id);
+    }
+
+    template <typename T>
     bool has() {
         return registry->has<T>(id);
     }
@@ -57,6 +67,13 @@ struct Entity {
     template <typename T>
     T &get() {
         return registry->get<T>(id);
+    }
+    
+    operator bool() { return id != 0; }
+    operator EntityId() { return id; }
+
+    bool operator==(Entity other) {
+        return id == other.id;
     }
 };
 
@@ -76,7 +93,7 @@ struct Scene {
 
     void destroy_entity(EntityId id) {
         entity_map.erase(id);
-        registry.remove(id);
+        registry.erase(id);
     }
 
     template <typename T>

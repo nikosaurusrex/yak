@@ -17,6 +17,8 @@ struct Mesh {
 };
 
 struct Meshes {
+    static Mesh *meshes[1];
+
     static Mesh *quad;
 
     static void init();
