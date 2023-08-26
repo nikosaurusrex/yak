@@ -20,6 +20,8 @@ struct Shader {
     void use();
 
     GLint get_uniform_location(string name);
+
+    void load_vec4(string name, glm::vec4 vec);
     void load_matrix(string name, glm::mat4 matrix);
 };
 

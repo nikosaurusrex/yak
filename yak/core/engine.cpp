@@ -39,9 +39,14 @@ void Engine::init() {
     renderer_2d->init();
 
     Entity entity = scene->create_entity("Apple");
-    entity.add<MeshComponent>(Meshes::quad);
+    entity.add<RendererComponent>(
+            RendererComponent(
+                Meshes::quad,
+                new Texture("yak/assets/textures/apple.png", GL_RGBA),
+                glm::vec4(1.0f)
+            )
+    );
     entity.add<TransformComponent>(TransformComponent(glm::vec3(50, 50, 1), glm::vec3(100, 100, 1)));
-    entity.add<TextureComponent>(new Texture("yak/assets/textures/apple.png", GL_RGBA));
 
     layers.add(new GameLayer(scene));
 }

@@ -110,6 +110,11 @@ GLint Shader::get_uniform_location(string name) {
     return location;
 }
 
+void Shader::load_vec4(string name, glm::vec4 vec) {
+    GLint location = get_uniform_location(name);
+    glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
+}
+
 void Shader::load_matrix(string name, glm::mat4 matrix) {
     GLint location = get_uniform_location(name);
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));

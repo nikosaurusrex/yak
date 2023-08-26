@@ -18,21 +18,22 @@ void Renderer2D::begin() {
 }
 
 void Renderer2D::render_scene(Scene *scene) {
-    auto mesh_entities = scene->get_entities_with_component<MeshComponent>();
+    auto entities = scene->get_entities_with_component<RendererComponent>();
 
-    for (auto entity : mesh_entities) {
+    for (auto entity : entities) {
+        auto &rc = entity.get<RendererComponent>();
+
         Shader *shader;
 
-        if (entity.has<TextureComponent>()) {
+        if (rc.texture) {
             shader = Shaders::texture;
-
-            TextureComponent tc = entity.get<TextureComponent>();
-            tc.texture->bind(0);
+            rc.texture->bind(0);
         } else {
             shader = Shaders::simple;
         }
 
         shader->use();
+        shader->load_vec4("in_color", rc.color);
 
         if (entity.has<TransformComponent>()) {
             TransformComponent tc = entity.get<TransformComponent>();
@@ -47,7 +48,7 @@ void Renderer2D::render_scene(Scene *scene) {
             shader->load_matrix("model_mat", model_mat);
         }
 
-        Mesh *mesh = entity.get<MeshComponent>().mesh;
+        Mesh *mesh = rc.mesh;
 
         mesh->bind();
         mesh->render();

@@ -26,24 +26,20 @@ struct TransformComponent {
     : translation(translation), scale(scale) {}
 };
 
-struct MeshComponent {
+struct RendererComponent {
     Mesh *mesh;
-
-    MeshComponent() {
-        mesh = Meshes::quad;
-    }
-
-    MeshComponent(Mesh *mesh) : mesh(mesh) {};
-};
-
-struct TextureComponent {
     Texture *texture;
+    glm::vec4 color;
 
-    TextureComponent() {
+    RendererComponent() {
+        mesh = Meshes::quad;
         texture = 0;
+        color = glm::vec4(1.0f);
     }
 
-    TextureComponent(Texture *texture) : texture(texture) {};
+    RendererComponent(Mesh *mesh, Texture *texture, glm::vec4 color)
+        : mesh(mesh), texture(texture), color(color)
+    {}
 };
 
 #endif

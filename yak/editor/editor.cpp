@@ -209,8 +209,7 @@ void PropertiesPanel::render(Scene *scene, Entity entity) {
     if (ImGui::BeginPopup("AddComponent")) {
 
         render_add_component<TransformComponent>(entity, "Transform");
-        render_add_component<MeshComponent>(entity, "Mesh");
-        render_add_component<TextureComponent>(entity, "Texture");
+        render_add_component<RendererComponent>(entity, "Renderer");
 
         ImGui::EndPopup();
     }
@@ -226,16 +225,14 @@ void PropertiesPanel::render_components(Entity entity) {
         ImGui::DragFloat3("Scale", &component.scale.x);
     });
 
-    render_component<MeshComponent>(entity, "Mesh", [](auto &component) {
+    render_component<RendererComponent>(entity, "Renderer", [](auto &component) {
         const char* mesh_items[] = { "Quad" };
         static int mesh_item_current = 0;
-        ImGui::Combo("Form", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items));        
+        ImGui::Combo("Mesh", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items));        
+
+        ImGui::ColorEdit4("Color", &component.color.x);
         
         component.mesh = Meshes::meshes[mesh_item_current];
-    });
-
-    render_component<TextureComponent>(entity, "Texture", [](auto &component) {
-        
     });
 }
 
