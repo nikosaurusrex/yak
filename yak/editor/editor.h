@@ -2,7 +2,7 @@
 #define GUI_H
 
 #include "core/event.h"
-#include "entity/ecs.h"
+#include "editor/panels.h"
 #include "entity/scene.h"
 
 using EntityId = u64;
@@ -21,34 +21,11 @@ struct RendererImGui {
 
 struct Engine;
 struct Framebuffer;
-
-struct SceneHierarchy {
-    Entity *selection;
-
-    SceneHierarchy(Entity *selection);
-
-    void render(Scene *scene);
-};
-
-struct PropertiesPanel {
-    void render(Scene *scene, Entity entity);
-
-    void render_components(Entity entity);
-
-    template <typename T, typename Callback>
-    void render_component(Entity entity, string name, Callback callback);
-
-    template <typename T>
-    void render_add_component(Entity entity, string name);
-};
-
-struct ContentBrowser {
-    void render();
-};
-
+struct Project;
 struct Editor : public EventHandler {
     Engine *engine;
     Window *window;
+    Project *project;
     RendererImGui *renderer;
     Framebuffer *framebuffer;
     SceneHierarchy *scene_hierarchy;
@@ -65,9 +42,6 @@ struct Editor : public EventHandler {
     void render();
     void render_menu();
     void render_scene();
-
-    bool property_begin_component();
-    void property_end_component(bool open);
 
     virtual void handle_event(Event event) override;
 };
