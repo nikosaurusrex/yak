@@ -12,7 +12,12 @@ struct SceneHierarchy {
     void render(Scene *scene);
 };
 
+struct Assets;
 struct PropertiesPanel {
+    Assets *assets;
+
+    PropertiesPanel(Assets *assets);
+
     void render(Scene *scene, Entity entity);
 
     void render_components(Entity entity);

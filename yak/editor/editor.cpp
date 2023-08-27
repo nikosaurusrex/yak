@@ -136,10 +136,10 @@ void RendererImGui::end() {
 Editor::Editor(Window *window) : window(window) {
     engine = new Engine(window);
     renderer = new RendererImGui(window);
+    project = new Project(engine->scene, engine->assets);
     scene_hierarchy = new SceneHierarchy(&selection);
-    properties_panel = new PropertiesPanel();
     content_browser = new ContentBrowser();
-    project = new Project(engine->scene);
+    properties_panel = new PropertiesPanel(project->assets);
 }
 
 Editor::~Editor() {

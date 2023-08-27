@@ -1,5 +1,22 @@
 #include "scene.h"
 
+Assets::Assets(string assets_path)
+    : assets_path(assets_path) {
+}
+
+Texture *Assets::load_texture(string path) {
+    auto it = textures.find(path);
+    if (it != textures.end()) {
+        return it->second;
+    }
+
+    string p = assets_path + path;
+
+    Texture *texture = new Texture(p, path, GL_RGBA);
+    textures.insert({path, texture});
+    return texture;
+}
+
 Entity Scene::create_entity(string tag) {
     EntityId id = registry.create();
     Entity entity = {&this->registry, id};

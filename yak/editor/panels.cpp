@@ -2,6 +2,7 @@
 
 #include "imgui.h"
 
+#include "editor/project.h"
 #include "entity/scene.h"
 
 SceneHierarchy::SceneHierarchy(Entity *selection)
@@ -57,6 +58,9 @@ void SceneHierarchy::render(Scene *scene) {
     ImGui::End();
 }
 
+PropertiesPanel::PropertiesPanel(Assets *assets) : assets(assets) {
+}
+
 void PropertiesPanel::render(Scene *scene, Entity entity) {
     ImGui::Begin("Properties");
 
@@ -92,19 +96,44 @@ void PropertiesPanel::render(Scene *scene, Entity entity) {
 }
 
 void PropertiesPanel::render_components(Entity entity) {
+    Assets *assets = this->assets;
+
     render_component<TransformComponent>(entity, "Transform", [](auto &component) {
         ImGui::DragFloat3("Position", &component.translation.x);
         ImGui::DragFloat3("Scale", &component.scale.x);
     });
 
-    render_component<RendererComponent>(entity, "Renderer", [](auto &component) {
-        const char* mesh_items[] = { "Quad" };
+    render_component<RendererComponent>(entity, "Renderer", [assets](auto &component) {
+        const char *mesh_items[] = { "Quad" };
         static int mesh_item_current = 0;
-        ImGui::Combo("Mesh", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items));        
+        if (ImGui::Combo("Mesh", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items))) {
+            component.mesh = Meshes::meshes[mesh_item_current];
+        }
 
         ImGui::ColorEdit4("Color", &component.color.x);
-        
-        component.mesh = Meshes::meshes[mesh_item_current];
+
+        const char *texture_preview = "Texture";
+        static int texture_selected = 0;
+        if (component.texture) {
+            texture_preview = component.texture->path.c_str();
+        }
+        if (ImGui::BeginCombo("Texture", texture_preview, 0)) {
+            s32 i = 0;
+            for (auto kv : assets->textures) {
+                bool selected = (texture_selected == i); 
+                if (ImGui::Selectable(kv.first.c_str(), selected)) {
+                    texture_selected = i;
+                    component.texture = kv.second;
+                }
+
+                if (selected)
+                    ImGui::SetItemDefaultFocus();
+
+                i++;
+            }
+
+            ImGui::EndCombo();
+        }
     });
 }
 

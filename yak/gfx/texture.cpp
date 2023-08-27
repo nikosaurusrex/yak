@@ -3,6 +3,16 @@
 #include "stb_image.h"
 
 Texture::Texture(string file_path, GLint format) {
+    path = file_path;
+    load(file_path, format);
+}
+
+Texture::Texture(string full_path, string relative_path, GLint format) {
+    path = relative_path;
+    load(full_path, format);
+}
+
+void Texture::load(string file_path, GLint format) {
     s32 w, h;
 
     stbi_set_flip_vertically_on_load(true);
@@ -10,7 +20,7 @@ Texture::Texture(string file_path, GLint format) {
     u8 *image = stbi_load(file_path.data(), &w, &h, 0, read_mode);
 
     if (!image) {
-        log_fatal("Failed to load texture '%s'", file_path);
+        log_fatal("Failed to load texture '%s'", file_path.c_str());
     }
 
     glGenTextures(1, &id);

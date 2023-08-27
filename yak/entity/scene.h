@@ -2,6 +2,16 @@
 #define SCENE_H
 
 #include "entity/ecs.h"
+#include "gfx/texture.h"
+
+struct Assets {
+    string assets_path;
+    map<string, Texture *> textures;
+
+    Texture *load_texture(string path);
+
+    Assets(string assets_path);
+};
 
 struct Scene {
     EntityRegistry registry;

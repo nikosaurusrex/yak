@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <string_view>
+#include <string>
 #include <vector>
 #include <unordered_map>
 #include <typeindex>
@@ -24,7 +24,7 @@
 
 #include "utility/log.h"
 
-using string = std::string_view;
+using string = std::string;
 
 template <typename T>
 using array = std::vector<T>;

@@ -12,6 +12,7 @@
 
 Engine::Engine(Window *window) : window(window) {
     scene = new Scene();
+    assets = new Assets("yak/assets/");
     renderer_2d = new Renderer2D(window);
 }
 
@@ -25,6 +26,7 @@ Engine::~Engine() {
 
     delete window;
     delete scene;
+    delete assets;
     delete renderer_2d;
 }
 
@@ -37,11 +39,14 @@ void Engine::init() {
 
     renderer_2d->init();
 
+    assets->load_texture("textures/apple.png");
+    assets->load_texture("textures/banana.png");
+
     Entity entity = scene->create_entity("Apple");
     entity.add<RendererComponent>(
             RendererComponent(
                 Meshes::quad,
-                new Texture("yak/assets/textures/apple.png", GL_RGBA),
+                assets->load_texture("textures/apple.png"),
                 glm::vec4(1.0f)
             )
     );
