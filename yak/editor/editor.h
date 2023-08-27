@@ -33,7 +33,7 @@ struct Editor : public EventHandler {
     ContentBrowser *content_browser;
     Entity selection;
 
-    Editor(Window *window);
+    Editor(Window *window, Project *project);
     ~Editor();
 
     void init();

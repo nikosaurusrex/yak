@@ -19,6 +19,7 @@ struct Engine : public EventHandler {
     Layers layers;
 
     Engine(Window *window);
+    Engine(Window *window, Scene *scene, Assets *assets);
     ~Engine();
 
     void init();

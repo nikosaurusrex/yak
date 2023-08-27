@@ -16,6 +16,11 @@ Engine::Engine(Window *window) : window(window) {
     renderer_2d = new Renderer2D(window);
 }
 
+Engine::Engine(Window *window, Scene *scene, Assets *assets)
+    : window(window), scene(scene), assets(assets) {
+    renderer_2d = new Renderer2D(window);
+}
+
 Engine::~Engine() {
     Shaders::free();
     Meshes::free();
@@ -38,19 +43,6 @@ void Engine::init() {
     Meshes::init();
 
     renderer_2d->init();
-
-    assets->load_texture("textures/apple.png");
-    assets->load_texture("textures/banana.png");
-
-    Entity entity = scene->create_entity("Apple");
-    entity.add<RendererComponent>(
-            RendererComponent(
-                Meshes::quad,
-                assets->load_texture("textures/apple.png"),
-                glm::vec4(1.0f)
-            )
-    );
-    entity.add<TransformComponent>(TransformComponent(glm::vec3(50, 50, 1), glm::vec3(100, 100, 1)));
 
     layers.add(new GameLayer(scene));
 }

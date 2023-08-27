@@ -133,10 +133,10 @@ void RendererImGui::end() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-Editor::Editor(Window *window) : window(window) {
-    engine = new Engine(window);
+Editor::Editor(Window *window, Project *project) 
+    : window(window), project(project) {
+    engine = new Engine(window, project->scene, project->assets);
     renderer = new RendererImGui(window);
-    project = new Project(engine->scene, engine->assets);
     scene_hierarchy = new SceneHierarchy(&selection);
     content_browser = new ContentBrowser();
     properties_panel = new PropertiesPanel(project->assets);
@@ -154,6 +154,8 @@ Editor::~Editor() {
 
 void Editor::init() {
     engine->init();
+
+    project->load();
 
     renderer->init();
 
@@ -242,7 +244,8 @@ void Editor::handle_event(Event event) {
 
 void run_editor() {
     Window *window = new Window("Engine", 1920, 1080);
-    Editor editor(window);
+    Project *project = new Project("/Users/niko/Desktop/example/");
+    Editor editor(window, project);
 
     editor.init();
     window->set_event_handler(&editor);

@@ -38,6 +38,7 @@ project "Yak"
 		"yak/**.cpp",
         "vendor/stb_image/**.h",
 		"vendor/stb_image/**.cpp",
+		"vendor/inicpp/**.h",
 		"vendor/glm/glm/**.hpp",
 		"vendor/glm/glm/**.inl"
 	}
@@ -46,6 +47,7 @@ project "Yak"
     {
         "yak",
         "vendor/stb_image",
+        "vendor/inicpp",
         "vendor/glfw/include",
         "vendor/imgui",
         "vendor/glm"
