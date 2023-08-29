@@ -198,6 +198,7 @@ void Editor::render() {
 void Editor::render_menu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Files")) {
+            if (ImGui::MenuItem("Save")) project->save();
             if (ImGui::MenuItem("Exit")) engine->stop();
 
             ImGui::EndMenu();
