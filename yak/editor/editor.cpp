@@ -8,7 +8,6 @@
 #include "core/window.h"
 #include "editor/project.h"
 #include "entity/components.h"
-#include "gfx/framebuffer.h"
 #include "gfx/renderer.h"
 #include "gfx/texture.h"
 
@@ -138,6 +137,7 @@ Editor::Editor(Window *window, Project *project)
     : window(window), project(project) {
     engine = new Engine(window, project->scene, project->assets);
     renderer = new RendererImGui(window);
+    scene_view = new SceneView(engine, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
     content_browser = new ContentBrowser();
     properties_panel = new PropertiesPanel(project->assets);
@@ -147,10 +147,10 @@ Editor::~Editor() {
     delete engine;
     delete renderer;
     delete project;
+    delete scene_view;
     delete scene_hierarchy;
     delete properties_panel;
     delete content_browser;
-    delete framebuffer;
 }
 
 void Editor::init() {
@@ -160,11 +160,7 @@ void Editor::init() {
 
     renderer->init();
 
-    framebuffer = new Framebuffer(
-        window->width,
-        window->height,
-        {GL_RGBA, GL_RED_INTEGER, GL_DEPTH24_STENCIL8}
-    );
+    scene_view->init();
 }
 
 void Editor::run() {
@@ -191,8 +187,8 @@ void Editor::render() {
     render_menu();
 
     ImGui::SetNextWindowDockID(dockspace);
-    render_scene();
 
+    scene_view->render(engine->scene);
     scene_hierarchy->render(engine->scene);
     properties_panel->render(engine->scene, selection);
     content_browser->render();
@@ -213,35 +209,15 @@ void Editor::render_menu() {
     } 
 }
 
-void Editor::render_scene() {
-    ImGui::Begin("Scene");
-
-    ImVec2 region = ImGui::GetContentRegionAvail();
-    s32 width = (s32) region.x;
-    s32 height = (s32) region.y;
-
-    engine->renderer_2d->resize(width, height);
-
-    framebuffer->bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    engine->render();
-    framebuffer->unbind();
-
-    ImVec2 pos = ImGui::GetCursorScreenPos();
-    ImGui::GetWindowDrawList()->AddImage(
-        (void *)framebuffer->get(0), 
-        ImVec2(pos.x, pos.y), 
-        ImVec2(pos.x + width, pos.y + height), 
-        ImVec2(0, 1), 
-        ImVec2(1, 0)
-    );
-	ImGui::End();
-}
-
 void Editor::handle_event(Event event) {
     switch (event.type) {
         case Event::RESIZE: {
-            framebuffer->resize(event.width, event.height);
+            scene_view->resize();
+        } break;
+        case Event::MOUSE_BUTTON: {
+            scene_view->on_mouse_button(event.button, event.action);
+        } break;
+        case Event::MOUSE_MOVE: {
         } break;
     }
 

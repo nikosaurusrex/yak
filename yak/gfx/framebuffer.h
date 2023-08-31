@@ -23,6 +23,7 @@ struct Framebuffer {
     void resize(s32 width, s32 height);
 
     GLuint get(u32 index);
+    s32 read(u32 index, s32 x, s32 y);
     void clear(u32 index, s32 value);
 };
 

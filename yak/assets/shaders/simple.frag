@@ -1,7 +1,7 @@
 #version 330 core
 
-out vec4 out_color;
-out int out_entity;
+layout(location=0) out vec4 out_color;
+layout(location=1) out int out_entity;
 
 uniform vec4 in_color;
 uniform int in_entity;

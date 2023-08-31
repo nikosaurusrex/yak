@@ -2,6 +2,46 @@
 
 #include "core/event.h"
 
+static void window_resize(GLFWwindow *handle, s32 width, s32 height) {
+    EventHandler *handler = (EventHandler *) glfwGetWindowUserPointer(handle);
+
+    if (!handler) return;
+
+    Event event;
+    event.type = Event::RESIZE;
+    event.width = width;
+    event.height = height;
+
+    handler->handle_event(event);
+}
+
+static void mouse_button_callback(GLFWwindow *handle, s32 button, s32 action, s32 mods) {
+    EventHandler *handler = (EventHandler *) glfwGetWindowUserPointer(handle);
+
+    if (!handler) return;
+
+    Event event;
+    event.type = Event::MOUSE_BUTTON;
+    event.button = button; 
+    event.action = action;
+    event.mods = mods;
+
+    handler->handle_event(event);
+}
+
+static void cursor_position_callback(GLFWwindow *handle, f64 xpos, f64 ypos) {
+    EventHandler *handler = (EventHandler *) glfwGetWindowUserPointer(handle);
+
+    if (!handler) return;
+
+    Event event;
+    event.type = Event::MOUSE_MOVE;
+    event.xpos = xpos;
+    event.ypos = ypos;
+
+    handler->handle_event(event);
+}
+
 Window::Window(const char *title, s32 width, s32 height)
     : title(title), width(width), height(height) {}
 
@@ -43,6 +83,8 @@ void Window::create() {
     glfwSetWindowUserPointer(handle, 0);
 
     glfwSetWindowSizeCallback(handle, window_resize);
+    glfwSetMouseButtonCallback(handle, mouse_button_callback);
+    glfwSetCursorPosCallback(handle, cursor_position_callback);
 
     glfwShowWindow(handle);
 }
@@ -68,17 +110,4 @@ void Window::destroy() {
 
 void Window::set_event_handler(EventHandler *handler) {
     glfwSetWindowUserPointer(handle, handler);
-}
-
-void window_resize(GLFWwindow* handle, s32 width, s32 height) {
-    EventHandler *handler = (EventHandler *) glfwGetWindowUserPointer(handle);
-
-    if (!handler) return;
-
-    Event event;
-    event.type = Event::RESIZE;
-    event.width = width;
-    event.height = height;
-
-    handler->handle_event(event);
 }

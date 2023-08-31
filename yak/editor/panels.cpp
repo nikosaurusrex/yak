@@ -1,9 +1,85 @@
 #include "panels.h"
 
-#include "imgui.h"
-
+#include "core/engine.h"
 #include "editor/project.h"
 #include "entity/scene.h"
+#include "gfx/framebuffer.h"
+
+SceneView::SceneView(Engine *engine, Entity *selection)
+    : engine(engine), selection(selection) {
+}
+
+SceneView::~SceneView() {
+    delete framebuffer;
+}
+
+void SceneView::init() {
+    framebuffer = new Framebuffer(
+        800,
+        600,
+        {GL_RGBA, GL_RED_INTEGER, GL_DEPTH24_STENCIL8}
+    );
+}
+
+void SceneView::render(Scene *scene) {
+    ImGui::Begin("Scene");
+
+    min_region = ImGui::GetWindowContentRegionMin();
+    max_region = ImGui::GetWindowContentRegionMax();
+    offset = ImGui::GetWindowPos();
+
+    width = (s32) max_region.x - min_region.x;
+    height = (s32) max_region.y - min_region.y;
+    framebuffer->bind();
+
+    if (need_resize) {
+        framebuffer->resize(width, height);
+        engine->renderer_2d->resize(width, height);
+        need_resize = false;
+    }
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    engine->render();
+
+    framebuffer->unbind();
+
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    ImGui::GetWindowDrawList()->AddImage(
+        (void *)framebuffer->get(0), 
+        ImVec2(pos.x, pos.y), 
+        ImVec2(pos.x + width, pos.y + height), 
+        ImVec2(0, 1), 
+        ImVec2(1, 0)
+    );
+	ImGui::End();
+}
+
+void SceneView::resize() {
+    need_resize = true;
+}
+
+void SceneView::on_mouse_button(s32 button, s32 action) {
+    if (action == GLFW_RELEASE) {
+        auto[mx, my] = ImGui::GetMousePos();
+        mx -= offset.x + min_region.x;
+        my -= offset.y + min_region.y;
+        my = height - my;
+            
+        log_info("%f %f", mx, my);
+
+        if (mx >= 0 && my >= 0 && mx < width && my < height) {
+            framebuffer->bind();
+            s32 pixel = framebuffer->read(1, mx, my);
+            framebuffer->unbind();
+
+            if (pixel != 0) {
+                *selection = Entity(&engine->scene->registry, pixel);
+            } else {
+                *selection = Entity();
+            }
+        }
+    }
+}
 
 SceneHierarchy::SceneHierarchy(Entity *selection)
     : selection(selection) {

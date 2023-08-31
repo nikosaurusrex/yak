@@ -113,6 +113,14 @@ GLuint Framebuffer::get(u32 index) {
     return color_attachments[index];
 }
 
+s32 Framebuffer::read(u32 index, s32 x, s32 y) {
+    glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
+
+    s32 value;
+    glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &value);
+    return value;
+}
+
 void Framebuffer::clear(u32 index, s32 value) {
     // glClearTexImage(color_attachments[index], 0, color_attachments_types[index], GL_INT, &value);
 }

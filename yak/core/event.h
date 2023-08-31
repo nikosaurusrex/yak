@@ -7,11 +7,27 @@ struct Event {
 
     enum EventType {
         RESIZE,
+        MOUSE_BUTTON,
+        MOUSE_MOVE
     };
 
     EventType type;
-    s32 width;
-    s32 height;
+
+    union {
+        struct {
+            s32 width;
+            s32 height;
+        };
+        struct {
+            s32 button;
+            s32 action;
+            s32 mods;
+        };
+        struct {
+            f64 xpos;
+            f64 ypos;
+        };
+    };
 };
 
 struct EventHandler {

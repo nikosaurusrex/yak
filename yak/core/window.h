@@ -20,6 +20,5 @@ struct Window {
 
     void set_event_handler(EventHandler *handler);
 };
-void window_resize(GLFWwindow *handle, s32 width, s32 height);
 
 #endif

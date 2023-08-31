@@ -27,7 +27,7 @@ struct Editor : public EventHandler {
     Window *window;
     Project *project;
     RendererImGui *renderer;
-    Framebuffer *framebuffer;
+    SceneView *scene_view;
     SceneHierarchy *scene_hierarchy;
     PropertiesPanel *properties_panel;
     ContentBrowser *content_browser;
@@ -41,7 +41,6 @@ struct Editor : public EventHandler {
 
     void render();
     void render_menu();
-    void render_scene();
 
     virtual void handle_event(Event event) override;
 };
