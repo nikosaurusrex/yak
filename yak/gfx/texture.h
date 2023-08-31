@@ -15,18 +15,4 @@ struct Texture {
     void bind(s32 slot);
 };
 
-struct Framebuffer {
-    GLuint fbo;
-    GLuint rbo;
-    GLuint texture_id;
-
-    Framebuffer(s32 width, s32 height);
-    ~Framebuffer();
-
-    void bind();
-    void unbind();
-
-    void resize(s32 width, s32 height);
-};
-
 #endif

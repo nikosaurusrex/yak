@@ -8,6 +8,7 @@
 #include "core/window.h"
 #include "editor/project.h"
 #include "entity/components.h"
+#include "gfx/framebuffer.h"
 #include "gfx/renderer.h"
 #include "gfx/texture.h"
 
@@ -159,7 +160,11 @@ void Editor::init() {
 
     renderer->init();
 
-    framebuffer = new Framebuffer(window->width, window->height);
+    framebuffer = new Framebuffer(
+        window->width,
+        window->height,
+        {GL_RGBA, GL_RED_INTEGER, GL_DEPTH24_STENCIL8}
+    );
 }
 
 void Editor::run() {
@@ -218,13 +223,13 @@ void Editor::render_scene() {
     engine->renderer_2d->resize(width, height);
 
     framebuffer->bind();
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     engine->render();
     framebuffer->unbind();
 
     ImVec2 pos = ImGui::GetCursorScreenPos();
     ImGui::GetWindowDrawList()->AddImage(
-        (void *)framebuffer->texture_id, 
+        (void *)framebuffer->get(0), 
         ImVec2(pos.x, pos.y), 
         ImVec2(pos.x + width, pos.y + height), 
         ImVec2(0, 1), 

@@ -34,6 +34,7 @@ void Renderer2D::render_scene(Scene *scene) {
 
         shader->use();
         shader->load_vec4("in_color", rc.color);
+        shader->load_int("in_entity", entity.id);
 
         if (entity.has<TransformComponent>()) {
             TransformComponent tc = entity.get<TransformComponent>();

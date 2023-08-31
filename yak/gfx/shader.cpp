@@ -58,8 +58,8 @@ GLuint Shader::load(const char *source, GLenum type, const char *type_name) {
     check_opengl_error();
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
     if (compiled != 1) {
-        log_fatal("%s Compilation failed", type_name);
         print_shader_log(shader);
+        log_fatal("%s Compilation failed", type_name);
     }
 
     return shader;
@@ -108,6 +108,11 @@ GLint Shader::get_uniform_location(string name) {
     GLint location = glGetUniformLocation(id, name.data());
     location_cache.insert({name, location});
     return location;
+}
+
+void Shader::load_int(string name, s32 value) {
+    GLint location = get_uniform_location(name);
+    glUniform1i(location, value);
 }
 
 void Shader::load_vec4(string name, glm::vec4 vec) {
