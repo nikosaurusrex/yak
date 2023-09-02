@@ -1,9 +1,11 @@
 # Yak
 The best 2D game engine
 
-## Todo
-* Guizmo (ImGuizmo)
-* Physics (Box2D)
-* Scene Management
-* Text Rendering
-* Batch Rendering
+## Roadmap
+- [ ] Render Statistics
+- [ ] Guizmo (ImGuizmo)
+- [ ] Scene Management
+- [ ] Camera
+- [ ] Physics (Box2D)
+- [ ] Text Rendering
+- [ ] Batch Rendering
