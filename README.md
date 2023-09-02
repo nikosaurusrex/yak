@@ -2,7 +2,7 @@
 The best 2D game engine
 
 ## Roadmap
-- [ ] Render Statistics
+- [x] Render Statistics
 - [ ] Guizmo (ImGuizmo)
 - [ ] Scene Management
 - [ ] Camera

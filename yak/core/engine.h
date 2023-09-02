@@ -17,6 +17,9 @@ struct Engine : public EventHandler {
     bool running = false;
     Layers layers;
 
+    f64 fps_time_last = 0;
+    u64 frames = 0;
+
     Engine(Window *window);
     Engine(Window *window, Scene *scene, Assets *assets);
     ~Engine();

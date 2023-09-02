@@ -261,5 +261,11 @@ void ContentBrowser::render() {
 void RenderStatsPanel::render() {
     ImGui::Begin("Render Statistics");
 
+    ImGui::Text("FPS %llu", RenderStats::fps);
+    ImGui::Text("ms/frame %f", RenderStats::mspf);
+    ImGui::Text("Render Calls %llu", RenderStats::render_calls);
+    ImGui::Text("Vertices %llu", RenderStats::vertices);
+    ImGui::Text("Indices %llu", RenderStats::indices);
+
     ImGui::End();
 }

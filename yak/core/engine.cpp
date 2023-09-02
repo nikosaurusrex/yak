@@ -61,6 +61,18 @@ void Engine::loop() {
 }
 
 void Engine::update() {
+    frames++;
+    f64 fps_time_now = glfwGetTime();
+    f64 fps_time_delta = fps_time_now - fps_time_last;
+    if (fps_time_delta >= 1.0f) {
+        RenderStats::fps = frames;
+        RenderStats::mspf = (fps_time_delta * 1000) / (f32)(frames);
+
+        frames = 0;
+
+        fps_time_last = fps_time_now;
+    }
+
     /* movement */
 
     /* collision */
