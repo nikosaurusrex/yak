@@ -59,4 +59,8 @@ struct ContentBrowser {
     void render();
 };
 
+struct RenderStatsPanel {
+    void render();
+};
+
 #endif

@@ -3,26 +3,14 @@
 
 #include "yakpch.h"
 
-#include "core/window.h"
-#include "entity/ecs.h"
 #include "entity/scene.h"
-#include "gfx/mesh.h"
-#include "gfx/shader.h"
-#include "gfx/texture.h"
 
 struct Renderer2D {
-    Window *window;
+    static void begin();
+    static void render_quad();
+    static void end();
 
-    Renderer2D(Window *window);
-    ~Renderer2D();
-
-    void init();
-
-    void begin();
-    void render_scene(Scene *scene);
-    void end();
-
-    void resize(s32 width, s32 height);
+    static void resize(s32 width, s32 height);
 };
 
 #endif

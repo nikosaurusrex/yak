@@ -34,7 +34,7 @@ void SceneView::render(Scene *scene) {
 
     if (need_resize) {
         framebuffer->resize(width, height);
-        engine->renderer_2d->resize(width, height);
+        Renderer2D::resize(width, height);
         need_resize = false;
     }
 
@@ -64,8 +64,6 @@ void SceneView::on_mouse_button(s32 button, s32 action) {
         mx -= offset.x + min_region.x;
         my -= offset.y + min_region.y;
         my = height - my;
-            
-        log_info("%f %f", mx, my);
 
         if (mx >= 0 && my >= 0 && mx < width && my < height) {
             framebuffer->bind();
@@ -259,3 +257,9 @@ void ContentBrowser::render() {
     ImGui::End();
 }
 
+
+void RenderStatsPanel::render() {
+    ImGui::Begin("Render Statistics");
+
+    ImGui::End();
+}

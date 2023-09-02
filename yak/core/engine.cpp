@@ -13,12 +13,10 @@
 Engine::Engine(Window *window) : window(window) {
     scene = new Scene();
     assets = new Assets("yak/assets/");
-    renderer_2d = new Renderer2D(window);
 }
 
 Engine::Engine(Window *window, Scene *scene, Assets *assets)
     : window(window), scene(scene), assets(assets) {
-    renderer_2d = new Renderer2D(window);
 }
 
 Engine::~Engine() {
@@ -32,7 +30,6 @@ Engine::~Engine() {
     delete window;
     delete scene;
     delete assets;
-    delete renderer_2d;
 }
 
 void Engine::init() {
@@ -41,8 +38,6 @@ void Engine::init() {
 
     Shaders::init();
     Meshes::init();
-
-    renderer_2d->init();
 
     layers.add(new GameLayer(scene));
 }
@@ -53,7 +48,7 @@ void Engine::run() {
 
 void Engine::loop() {
     while (running) {
-        renderer_2d->resize(window->width, window->height);
+        Renderer2D::resize(window->width, window->height);
         update();
 
         render();
@@ -72,11 +67,11 @@ void Engine::update() {
 }
 
 void Engine::render() {
-    renderer_2d->begin();
+    Renderer2D::begin();
     for (Layer *layer : layers.layers) {
-        layer->render(renderer_2d);
+        layer->render();
     }
-    renderer_2d->end();
+    Renderer2D::end();
 }
 
 void Engine::stop() {

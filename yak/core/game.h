@@ -11,7 +11,7 @@ struct GameLayer : public Layer {
     virtual void init() override;
     virtual void deinit() override;
 
-    virtual void render(Renderer2D *renderer) override;
+    virtual void render() override;
 };
 
 #endif

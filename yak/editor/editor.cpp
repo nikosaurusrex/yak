@@ -112,7 +112,8 @@ void RendererImGui::init() {
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window->handle, true);
-    ImGui_ImplOpenGL3_Init("#version 410");IMGUI_CHECKVERSION();
+    ImGui_ImplOpenGL3_Init("#version 410");
+    IMGUI_CHECKVERSION();
 }
 
 void RendererImGui::begin() {
@@ -139,8 +140,9 @@ Editor::Editor(Window *window, Project *project)
     renderer = new RendererImGui(window);
     scene_view = new SceneView(engine, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
-    content_browser = new ContentBrowser();
     properties_panel = new PropertiesPanel(project->assets);
+    content_browser = new ContentBrowser();
+    render_stats_panel = new RenderStatsPanel();
 }
 
 Editor::~Editor() {
@@ -192,6 +194,7 @@ void Editor::render() {
     scene_hierarchy->render(engine->scene);
     properties_panel->render(engine->scene, selection);
     content_browser->render();
+    render_stats_panel->render();
 
     renderer->end();
 }

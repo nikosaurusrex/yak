@@ -14,7 +14,6 @@ struct Engine : public EventHandler {
     Window *window = 0;
     Scene *scene;
     Assets *assets;
-    Renderer2D *renderer_2d;
     bool running = false;
     Layers layers;
 

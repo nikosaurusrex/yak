@@ -13,7 +13,7 @@ struct Layer {
     virtual void init() = 0;
     virtual void deinit() = 0;
 
-    virtual void render(Renderer2D *renderer) = 0;
+    virtual void render() = 0;
 };
 
 struct Layers {

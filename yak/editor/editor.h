@@ -31,6 +31,7 @@ struct Editor : public EventHandler {
     SceneHierarchy *scene_hierarchy;
     PropertiesPanel *properties_panel;
     ContentBrowser *content_browser;
+    RenderStatsPanel *render_stats_panel;
     Entity selection;
 
     Editor(Window *window, Project *project);
