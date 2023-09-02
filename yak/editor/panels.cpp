@@ -1,9 +1,14 @@
 #include "panels.h"
 
+#include "glm/gtc/type_ptr.hpp"
+
+#include "ImGuizmo.h"
+
 #include "core/engine.h"
 #include "editor/project.h"
 #include "entity/scene.h"
 #include "gfx/framebuffer.h"
+#include "gfx/shader.h"
 
 SceneView::SceneView(Engine *engine, Entity *selection)
     : engine(engine), selection(selection) {
@@ -21,37 +26,81 @@ void SceneView::init() {
     );
 }
 
-void SceneView::render(Scene *scene) {
+void SceneView::render() {
     ImGui::Begin("Scene");
 
-    min_region = ImGui::GetWindowContentRegionMin();
-    max_region = ImGui::GetWindowContentRegionMax();
-    offset = ImGui::GetWindowPos();
+    offset = ImGui::GetCursorScreenPos();
+    region = ImGui::GetContentRegionAvail();
 
-    width = (s32) max_region.x - min_region.x;
-    height = (s32) max_region.y - min_region.y;
+    if (region.x != last_region.x || region.y != last_region.y) {
+        need_resize = true;
+    }
+
+    last_region = region;
+
+    s32 width = (s32) region.x;
+    s32 height = (s32) region.y;
     framebuffer->bind();
 
     if (need_resize) {
         framebuffer->resize(width, height);
         Renderer2D::resize(width, height);
+
+        f32 aspect = region.x / region.y;
+
+        proj_mat = glm::ortho<f32>(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
+        view_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0));
+
+        Shaders::load_for_all("view_mat", view_mat);
+        Shaders::load_for_all("proj_mat", proj_mat);
+
         need_resize = false;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     engine->render();
 
     framebuffer->unbind();
 
-    ImVec2 pos = ImGui::GetCursorScreenPos();
     ImGui::GetWindowDrawList()->AddImage(
-        (void *)framebuffer->get(0), 
-        ImVec2(pos.x, pos.y), 
-        ImVec2(pos.x + width, pos.y + height), 
+        (void *) framebuffer->get(0), 
+        ImVec2(offset.x, offset.y), 
+        ImVec2(offset.x + width, offset.y + height), 
         ImVec2(0, 1), 
         ImVec2(1, 0)
     );
-	ImGui::End();
+
+    if (*selection) {
+        Entity entity = *selection;
+        if (entity.has<TransformComponent>()) {
+            TransformComponent &tc = entity.get<TransformComponent>();
+            ImGuizmo::SetOrthographic(false);
+            ImGuizmo::SetDrawlist();
+
+            ImGuizmo::SetRect(offset.x, offset.y, width, height);
+
+            glm::mat4 transform;
+
+            ImGuizmo::Manipulate(
+                glm::value_ptr(view_mat),
+                glm::value_ptr(proj_mat),
+                ImGuizmo::OPERATION::TRANSLATE,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(transform)
+            );
+
+            if (ImGuizmo::IsUsing()) {
+                ImGuizmo::DecomposeMatrixToComponents(
+                    glm::value_ptr(transform),
+                    glm::value_ptr(tc.translation),
+                    glm::value_ptr(tc.rotation),
+                    glm::value_ptr(tc.scale)
+                );
+            }
+        }
+    }
+    
+    ImGui::End();
 }
 
 void SceneView::resize() {
@@ -61,11 +110,11 @@ void SceneView::resize() {
 void SceneView::on_mouse_button(s32 button, s32 action) {
     if (action == GLFW_RELEASE) {
         auto[mx, my] = ImGui::GetMousePos();
-        mx -= offset.x + min_region.x;
-        my -= offset.y + min_region.y;
-        my = height - my;
+        mx -= offset.x;
+        my -= offset.y;
+        my = region.y - my;
 
-        if (mx >= 0 && my >= 0 && mx < width && my < height) {
+        if (mx >= 0 && my >= 0 && mx < region.x && my < region.y) {
             framebuffer->bind();
             s32 pixel = framebuffer->read(1, mx, my);
             framebuffer->unbind();
@@ -173,8 +222,9 @@ void PropertiesPanel::render_components(Entity entity) {
     Assets *assets = this->assets;
 
     render_component<TransformComponent>(entity, "Transform", [](auto &component) {
-        ImGui::DragFloat3("Position", &component.translation.x);
-        ImGui::DragFloat3("Scale", &component.scale.x);
+        ImGui::DragFloat3("Position", &component.translation.x, 0.05f);
+        ImGui::DragFloat3("Rotation", &component.rotation.x, 0.05f);
+        ImGui::DragFloat3("Scale", &component.scale.x, 0.05f);
     });
 
     render_component<RendererComponent>(entity, "Renderer", [assets](auto &component) {

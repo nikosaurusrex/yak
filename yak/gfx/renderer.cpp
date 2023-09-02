@@ -13,7 +13,9 @@ u64 RenderStats::vertices = 0;
 u64 RenderStats::indices = 0;
 
 void Renderer2D::begin() {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     RenderStats::render_calls = 0;
     RenderStats::vertices = 0;
@@ -31,11 +33,9 @@ void Renderer2D::render_quad() {
 }
 
 void Renderer2D::end() {
+    glDisable(GL_BLEND);
 }
 
 void Renderer2D::resize(s32 width, s32 height) {
     glViewport(0, 0, width, height);
-    
-    glm::mat4 proj_matrix = glm::ortho<f32>(0, width, 0, height, -1, 1);
-    Shaders::load_for_all("proj_mat", proj_matrix);
 }

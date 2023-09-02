@@ -4,6 +4,8 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "backends/imgui_impl_glfw.h"
 
+#include "ImGuizmo.h"
+
 #include "core/engine.h"
 #include "core/window.h"
 #include "editor/project.h"
@@ -117,11 +119,12 @@ void RendererImGui::init() {
 }
 
 void RendererImGui::begin() {
+    glClear(GL_COLOR_BUFFER_BIT);
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    glClear(GL_COLOR_BUFFER_BIT);
+    ImGuizmo::BeginFrame();
 }
 
 void RendererImGui::end() {
@@ -130,7 +133,6 @@ void RendererImGui::end() {
 
     // Rendering
     ImGui::Render();
-    glViewport(0, 0, window->width, window->height);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
@@ -190,7 +192,7 @@ void Editor::render() {
 
     ImGui::SetNextWindowDockID(dockspace);
 
-    scene_view->render(engine->scene);
+    scene_view->render();
     scene_hierarchy->render(engine->scene);
     properties_panel->render(engine->scene, selection);
     content_browser->render();

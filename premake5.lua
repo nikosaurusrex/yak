@@ -36,10 +36,12 @@ project "Yak"
 	{
 		"yak/**.h",
 		"yak/**.cpp",
-        "vendor/stb_image/**.h",
+		"vendor/stb_image/**.h",
 		"vendor/stb_image/**.cpp",
 		"vendor/glm/glm/**.hpp",
-		"vendor/glm/glm/**.inl"
+		"vendor/glm/glm/**.inl",
+		"vendor/imguizmo/ImGuizmo.cpp",
+		"vendor/imguizmo/ImGuizmo.h"
 	}
 
     includedirs
@@ -47,8 +49,9 @@ project "Yak"
         "yak",
         "vendor/stb_image",
         "vendor/glfw/include",
+        "vendor/glm",
         "vendor/imgui",
-        "vendor/glm"
+	"vendor/imguizmo"
     }
 
     links {

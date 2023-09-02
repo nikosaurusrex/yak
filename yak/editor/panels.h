@@ -12,18 +12,19 @@ struct SceneView {
     Engine *engine;
     Entity *selection;
     Framebuffer *framebuffer;
-    ImVec2 min_region;
-    ImVec2 max_region;
     ImVec2 offset;
-    s32 width;
-    s32 height;
+    ImVec2 region;
+    ImVec2 last_region;
     bool need_resize = true;
+
+    glm::mat4 proj_mat;
+    glm::mat4 view_mat;
 
     SceneView(Engine *engine, Entity *selection);
     ~SceneView();
 
     void init();
-    void render(Scene *scene);
+    void render();
 
     void resize();
 

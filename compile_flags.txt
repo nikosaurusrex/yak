@@ -1,0 +1,14 @@
+-xc++
+-I
+yak
+-I
+vendor/stb_image
+-I
+vendor/glfw/include
+-I
+vendor/glm
+-I
+vendor/imgui
+-I
+vendor/imguizmo
+-std=c++20

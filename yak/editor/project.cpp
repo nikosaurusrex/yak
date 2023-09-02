@@ -40,10 +40,11 @@ void ProjectFile::read() {
                     while (line != "[EntityEnd]") {
                         if (line == "[Transform]") {
                             glm::vec3 translation = read_vec3(file);
+                            glm::vec3 rotation = read_vec3(file);
                             glm::vec3 scale = read_vec3(file);
 
                             entity.add<TransformComponent>(
-                                TransformComponent(translation, scale)
+                                TransformComponent(translation, rotation, scale)
                             );
                         } else if (line == "[Renderer]") {
                             std::getline(file, line);
@@ -51,7 +52,10 @@ void ProjectFile::read() {
                             Mesh *mesh = Meshes::quad;
                             std::getline(file, line);
 
-                            Texture *texture = assets->load_texture(line);
+                            Texture *texture = 0;
+                            if (line != "<None>") {
+                                texture = assets->load_texture(line);
+                            }
 
                             glm::vec4 color = read_vec4(file);
 
@@ -108,6 +112,7 @@ void ProjectFile::write() {
     for (auto kv : assets->textures) {
         of << kv.first << "\n";
     }
+    of << "[TexturesEnd]\n";
     
     of << "[Entities]\n";
     for (auto kv : scene->entity_map) {
@@ -122,6 +127,7 @@ void ProjectFile::write() {
             auto &tc = entity.get<TransformComponent>();
             
             write(of, tc.translation);
+            write(of, tc.rotation);
             write(of, tc.scale);
         }
 
@@ -130,7 +136,11 @@ void ProjectFile::write() {
             auto &rc = entity.get<RendererComponent>();
             
             of << "Quad\n";
-            of << rc.texture->path << "\n";
+            if (rc.texture) {
+                of << rc.texture->path << "\n";
+            } else {
+                of << "<None>\n";
+            }
             write(of, rc.color);
         }
 
