@@ -6,6 +6,7 @@
 
 #include "core/engine.h"
 #include "editor/camera.h"
+#include "editor/editor.h"
 #include "editor/project.h"
 #include "entity/scene.h"
 #include "gfx/framebuffer.h"
@@ -77,26 +78,30 @@ void SceneView::render(Camera *camera) {
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
 
-            ImGuizmo::SetRect(offset.x, offset.y, width, height);
+            // ImGuizmo::SetRect(offset.x, offset.y, width, height);
+            f32 w = ImGui::GetWindowWidth();
+            f32 h = ImGui::GetWindowHeight();
+            ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, w, h);
 
-            glm::mat4 transform;
+            glm::mat4 translate;
 
             ImGuizmo::Manipulate(
                 glm::value_ptr(view_mat),
                 glm::value_ptr(proj_mat),
                 ImGuizmo::OPERATION::TRANSLATE,
                 ImGuizmo::LOCAL,
-                glm::value_ptr(transform)
+                glm::value_ptr(translate)
             );
 
+            /*
             if (ImGuizmo::IsUsing()) {
                 ImGuizmo::DecomposeMatrixToComponents(
-                    glm::value_ptr(transform),
+                    glm::value_ptr(translate),
                     glm::value_ptr(tc.translation),
                     glm::value_ptr(tc.rotation),
                     glm::value_ptr(tc.scale)
                 );
-            }
+            }*/
         }
     }
     
@@ -376,17 +381,13 @@ void PropertiesPanel::render_vec_xyz(glm::vec3 *vec, const char *label, const ch
     f32 label_width = ImGui::CalcTextSize("M").x;
     ImGui::PushItemWidth(((region.x - 100.0f) / 3) - label_width);
 
-    ImGui::PushStyleColor(ImGuiCol_Button, {0.35f, 0.1f, 0.1f, 1.0f});
+    ImGui::PushStyleColor(ImGuiCol_Button, {1.0f, 0.75f, 0.81f, 0.2f});
     ImGui::Button("X"); ImGui::SameLine();
     ImGui::DragFloat("##x", &vec->x, 0.05f, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-    ImGui::PopStyleColor();
 
-    ImGui::PushStyleColor(ImGuiCol_Button, {0.1f, 0.35f, 0.1f, 1.0f});
     ImGui::Button("Y"); ImGui::SameLine();
     ImGui::DragFloat("##y", &vec->y, 0.05f, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
-    ImGui::PopStyleColor();
 
-    ImGui::PushStyleColor(ImGuiCol_Button, {0.1f, 0.1f, 0.35f, 1.0f});
     ImGui::Button("Z"); ImGui::SameLine();
     ImGui::DragFloat("##z", &vec->z, 0.05f, 0.0f, 0.0f, "%.2f");
     ImGui::PopStyleColor();
@@ -398,12 +399,29 @@ void PropertiesPanel::render_vec_xyz(glm::vec3 *vec, const char *label, const ch
     ImGui::PopID();
 }
 
+void Toolbar::render(Editor *editor) {
+    ImGui::Begin("toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+
+    if (editor->mode == MODE_EDIT) {
+        if (ImGui::Button("Play")) {
+            editor->mode = MODE_PLAY;
+            editor->selection = {};
+        }
+    } else {
+        if (ImGui::Button("Edit")) {
+            editor->mode = MODE_EDIT;
+        }
+    }
+
+    ImGui::End();
+}
+
 void ContentBrowser::render() {
     ImGui::Begin("Content Browser");
 
     ImGui::End();
 }
-
 
 void RenderStatsPanel::render() {
     ImGui::Begin("Render Statistics");
@@ -413,6 +431,12 @@ void RenderStatsPanel::render() {
     ImGui::Text("Render Calls %llu", RenderStats::render_calls);
     ImGui::Text("Vertices %llu", RenderStats::vertices);
     ImGui::Text("Indices %llu", RenderStats::indices);
+
+    ImGui::End();
+}
+
+void DebugConsole::render() {
+    ImGui::Begin("Debug Console");
 
     ImGui::End();
 }

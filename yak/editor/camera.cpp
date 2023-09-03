@@ -10,7 +10,7 @@ Camera::Camera(f32 fov, f32 aspect, f32 near, f32 far)
     yaw = 0;
     pitch = 0;
     focal_point = glm::vec3(0.0f);
-    distance = 10;
+    distance = 5;
 }
 
 void Camera::resize(s32 width, s32 height) {

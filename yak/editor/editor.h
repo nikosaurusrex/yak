@@ -1,24 +1,27 @@
 #ifndef GUI_H
 #define GUI_H
 
+#include "yakpch.h"
+
 #include "core/event.h"
 #include "editor/panels.h"
 #include "entity/scene.h"
 
-using EntityId = u64;
-struct Window;
-struct RendererImGui {
-    Window *window;
-
-    RendererImGui(Window *window);
-    ~RendererImGui();
-
-    void init();
-
-    void begin();
-    void end();
+enum mode {
+    MODE_EDIT = 0,
+    MODE_PLAY = 1
 };
 
+using EntityId = u64;
+struct RendererImGui {
+    static void init(GLFWwindow *window);
+    static void deinit();
+
+    static void begin();
+    static void end(s32 width, s32 height);
+};
+
+struct Window;
 struct Engine;
 struct Framebuffer;
 struct Project;
@@ -27,14 +30,16 @@ struct Editor : public EventHandler {
     Engine *engine;
     Window *window;
     Project *project;
-    RendererImGui *renderer;
     SceneView *scene_view;
     SceneHierarchy *scene_hierarchy;
     PropertiesPanel *properties_panel;
     ContentBrowser *content_browser;
     RenderStatsPanel *render_stats_panel;
+    Toolbar *toolbar;
     Camera *camera;
     Entity selection;
+
+    u64 mode = MODE_EDIT;
 
     Editor(Window *window, Project *project);
     ~Editor();

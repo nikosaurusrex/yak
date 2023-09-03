@@ -21,7 +21,6 @@ struct SceneView {
     glm::mat4 proj_mat;
     glm::mat4 view_mat;
 
-    SceneView() = default;
     SceneView(Engine *engine, Entity *selection);
     ~SceneView();
 
@@ -36,7 +35,6 @@ struct SceneView {
 struct SceneHierarchy {
     Entity *selection;
 
-    SceneHierarchy() = default;
     SceneHierarchy(Entity *selection);
 
     void render(Scene *scene);
@@ -46,7 +44,6 @@ struct Assets;
 struct PropertiesPanel {
     Assets *assets;
 
-    PropertiesPanel() = default;
     PropertiesPanel(Assets *assets);
 
     void render(Scene *scene, Entity entity);
@@ -65,16 +62,21 @@ struct PropertiesPanel {
     void render_vec_xyz(glm::vec3 *vec, const char *label, const char *id);
 };
 
-struct ContentBrowser {
-    ContentBrowser() = default;
+struct Editor;
+struct Toolbar {
+    void render(Editor *editor);
+};
 
+struct ContentBrowser {
     void render();
 };
 
 struct RenderStatsPanel {
-    RenderStatsPanel() = default;
-
     void render();
+};
+
+struct DebugConsole {
+    static void render();
 };
 
 #endif

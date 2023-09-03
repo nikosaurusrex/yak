@@ -29,7 +29,7 @@ project "Yak"
 	targetdir ("bin/" .. outputdir)
 	objdir ("bin/" .. outputdir .. "/temp")
 
-    pchheader "yakpch.h"
+        pchheader "yakpch.h"
 	pchsource "yak/yakpch.cpp"
 
 	files
@@ -58,6 +58,9 @@ project "Yak"
         "GLFW",
         "ImGui"
     }
+
+    filter "files:vendor/ImGuizmo/**.cpp"
+	flags { "NoPCH" }
 
     filter { "system:macosx" }
         defines { "GL_SILENCE_DEPRECATION" }

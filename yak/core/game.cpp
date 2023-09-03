@@ -1,5 +1,7 @@
 #include "game.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
 #include "entity/components.h"
@@ -7,6 +9,7 @@
 #include "gfx/mesh.h"
 #include "gfx/shader.h"
 #include "gfx/texture.h"
+#include "glm/ext/matrix_transform.hpp"
 
 GameLayer::GameLayer(Scene *scene) : scene(scene) {
 }
@@ -40,12 +43,13 @@ void GameLayer::render() {
         if (entity.has<TransformComponent>()) {
             TransformComponent tc = entity.get<TransformComponent>();
 
-            auto model_mat = glm::mat4(1.0);
             auto translation = tc.translation;
+            auto rotation = tc.rotation;
             auto scale = tc.scale;
 
-            model_mat = glm::translate(model_mat, translation);
-            model_mat = glm::scale(model_mat, scale);
+            glm::mat4 model_mat = glm::translate(glm::mat4(1.0f), translation) * 
+                        glm::toMat4(glm::quat(glm::radians(rotation))) *
+                        glm::scale(glm::mat4(1.0f), scale);
 
             shader->load_matrix("model_mat", model_mat);
         }

@@ -14,16 +14,7 @@
 #include "gfx/renderer.h"
 #include "gfx/texture.h"
 
-RendererImGui::RendererImGui(Window *window) : window(window) {
-}
-
-RendererImGui::~RendererImGui() {
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-}
-
-void RendererImGui::init() {
+void RendererImGui::init(GLFWwindow *window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
@@ -122,9 +113,15 @@ void RendererImGui::init() {
     style.ChildRounding = 4;
 
     // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window->handle, true);
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 410");
     IMGUI_CHECKVERSION();
+}
+
+void RendererImGui::deinit() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
 
 void RendererImGui::begin() {
@@ -136,9 +133,9 @@ void RendererImGui::begin() {
     ImGuizmo::BeginFrame();
 }
 
-void RendererImGui::end() {
+void RendererImGui::end(s32 width, s32 height) {
     ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)window->width, (float)window->height);
+    io.DisplaySize = ImVec2((f32)width, (f32)height);
 
     // Rendering
     ImGui::Render();
@@ -148,23 +145,25 @@ void RendererImGui::end() {
 Editor::Editor(Window *window, Project *project) 
     : window(window), project(project) {
     engine = new Engine(window, project->scene, project->assets);
-    renderer = new RendererImGui(window);
     scene_view = new SceneView(engine, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
     properties_panel = new PropertiesPanel(project->assets);
     content_browser = new ContentBrowser();
     render_stats_panel = new RenderStatsPanel();
+    toolbar = new Toolbar();
     camera = new Camera(30.0f, 1.0f, 0.1f, 1000.0f);
 }
 
 Editor::~Editor() {
+    RendererImGui::deinit();
+
     delete engine;
-    delete renderer;
     delete project;
     delete scene_view;
     delete scene_hierarchy;
     delete properties_panel;
     delete content_browser;
+    delete toolbar;
     delete camera;
 }
 
@@ -173,7 +172,7 @@ void Editor::init() {
 
     project->load();
 
-    renderer->init();
+    RendererImGui::init(window->handle);
 
     scene_view->init();
 }
@@ -195,7 +194,7 @@ void Editor::run() {
 }
 
 void Editor::render() {
-    renderer->begin();
+    RendererImGui::begin();
 
     ImGuiID dockspace = ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
@@ -208,8 +207,11 @@ void Editor::render() {
     properties_panel->render(engine->scene, selection);
     content_browser->render();
     render_stats_panel->render();
+    toolbar->render(this);
 
-    renderer->end();
+    DebugConsole::render();
+
+    RendererImGui::end(window->width, window->height);
 }
 
 void Editor::render_menu() {
@@ -226,6 +228,11 @@ void Editor::render_menu() {
 }
 
 void Editor::handle_event(Event event) {
+    if (mode != MODE_EDIT) {
+        engine->handle_event(event);
+        return;
+    }
+
     switch (event.type) {
         case Event::RESIZE: {
             scene_view->resize();
@@ -247,8 +254,6 @@ void Editor::handle_event(Event event) {
             }
         } break;
     }
-
-    engine->handle_event(event);
 }
 
 void run_editor() {
