@@ -31,8 +31,16 @@ void RendererImGui::init() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
     // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+    static const ImWchar ranges[] = {
+        0x0020, 0x00FF,
+        0x2122, 0x2122,
+        0x2715, 0x2715,
+        0
+    };
     
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 18);
+    // io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 18);
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/DejaVuSans.ttf", 18, 0, ranges);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();

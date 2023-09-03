@@ -49,11 +49,16 @@ struct PropertiesPanel {
 
     void render_components(Entity entity);
 
+    template <typename T>
+    void render_add_component(Entity entity, string name);
+
     template <typename T, typename Callback>
     void render_component(Entity entity, string name, Callback callback);
 
-    template <typename T>
-    void render_add_component(Entity entity, string name);
+    template <typename Callback>
+    bool render_property(const char *name, bool has_remove_button, Callback callback);
+
+    void render_vec_xyz(glm::vec3 *vec, const char *label, const char *id);
 };
 
 struct ContentBrowser {

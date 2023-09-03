@@ -140,24 +140,24 @@ void SceneHierarchy::render(Scene *scene) {
         string tag = entity.get<TagComponent>().tag;
 
         ImGuiTreeNodeFlags flags = ((*selection == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+        flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
         bool opened = ImGui::TreeNodeEx((void*)entity.id, flags, "%s", tag.data());
-		if (ImGui::IsItemClicked()) {
-			*selection = entity;
-		}
+        if (ImGui::IsItemClicked()) {
+            *selection = entity;
+        }
 
         bool deleted = false;
-		if (ImGui::BeginPopupContextItem()) {
-			if (ImGui::MenuItem("Delete Entity"))
-				deleted = true;
+        if (ImGui::BeginPopupContextItem()) {
+            if (ImGui::MenuItem("Delete Entity"))
+                deleted = true;
 
-			ImGui::EndPopup();
-		}
+            ImGui::EndPopup();
+        }
 
         if (opened) {
-			ImGui::TreePop();
-		}
+            ImGui::TreePop();
+        }
 
         if (deleted) {
             scene->destroy_entity(entity.id);
@@ -212,7 +212,8 @@ void PropertiesPanel::render(Scene *scene, Entity entity) {
 
         ImGui::EndPopup();
     }
-	ImGui::PopItemWidth();
+    
+    ImGui::PopItemWidth();
 
     ImGui::End();
 
@@ -221,44 +222,68 @@ void PropertiesPanel::render(Scene *scene, Entity entity) {
 void PropertiesPanel::render_components(Entity entity) {
     Assets *assets = this->assets;
 
-    render_component<TransformComponent>(entity, "Transform", [](auto &component) {
-        ImGui::DragFloat3("Position", &component.translation.x, 0.05f);
-        ImGui::DragFloat3("Rotation", &component.rotation.x, 0.05f);
-        ImGui::DragFloat3("Scale", &component.scale.x, 0.05f);
+    ImGui::PushID(entity.id);
+
+    render_component<TransformComponent>(entity, "Transform", [this](auto &component) {
+        render_vec_xyz(&component.translation, "Position", "##position");
+        render_vec_xyz(&component.rotation, "Rotation", "##rotation");
+        render_vec_xyz(&component.scale, "Scale", "##scale");
     });
 
-    render_component<RendererComponent>(entity, "Renderer", [assets](auto &component) {
-        const char *mesh_items[] = { "Quad" };
-        static int mesh_item_current = 0;
-        if (ImGui::Combo("Mesh", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items))) {
-            component.mesh = Meshes::meshes[mesh_item_current];
-        }
+    render_component<RendererComponent>(entity, "Renderer", [this, assets](auto &component) {
+        bool remove = render_property("Mesh", false, [&component]{
+            const char *mesh_items[] = { "Quad" };
+            static int mesh_item_current = 0;
+            
+            if (ImGui::Combo("##mesh", &mesh_item_current, mesh_items, IM_ARRAYSIZE(mesh_items))) {
+                component.mesh = Meshes::meshes[mesh_item_current];
+            }
+        });
 
-        ImGui::ColorEdit4("Color", &component.color.x);
+        remove = render_property("Color", false, [&component] {
+            ImGui::ColorEdit4("##color", &component.color.x);
+        });
 
-        const char *texture_preview = "Texture";
-        static int texture_selected = 0;
-        if (component.texture) {
-            texture_preview = component.texture->path.c_str();
-        }
-        if (ImGui::BeginCombo("Texture", texture_preview, 0)) {
-            s32 i = 0;
-            for (auto kv : assets->textures) {
-                bool selected = (texture_selected == i); 
-                if (ImGui::Selectable(kv.first.c_str(), selected)) {
-                    texture_selected = i;
-                    component.texture = kv.second;
+        remove = render_property("Texture", true, [&component, assets] {
+            const char *texture_preview = "<None>";
+            static int texture_selected = 0;
+            if (component.texture) {
+                texture_preview = component.texture->path.c_str();
+            }
+            if (ImGui::BeginCombo("##texture", texture_preview, 0)) {
+                s32 i = 0;
+                for (auto kv : assets->textures) {
+                    bool selected = (texture_selected == i); 
+                    if (ImGui::Selectable(kv.first.c_str(), selected)) {
+                        texture_selected = i;
+                        component.texture = kv.second;
+                    }
+
+                    if (selected)
+                        ImGui::SetItemDefaultFocus();
+
+                    i++;
                 }
 
-                if (selected)
-                    ImGui::SetItemDefaultFocus();
-
-                i++;
+                ImGui::EndCombo();
             }
-
-            ImGui::EndCombo();
+        });
+        if (remove) {
+            component.texture = 0;
         }
     });
+
+    ImGui::PopID();
+}
+
+template <typename T>
+void PropertiesPanel::render_add_component(Entity entity, string name) {
+    if (!entity.has<T>()) {
+        if (ImGui::MenuItem(name.data())) {
+            entity.add<T>(T());
+            ImGui::CloseCurrentPopup();
+        }
+    } 
 }
 
 template <typename T, typename Callback>
@@ -273,10 +298,12 @@ void PropertiesPanel::render_component(Entity entity, string name, Callback call
         bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), tn_flags, "%s", name.data());
         ImGui::PopStyleVar();
 
-        f32 remove_button_size = 22.0f + 4.0f * 2.0f;
+        ImGuiIO& io = ImGui::GetIO();
+        f32 font_size = io.FontDefault->FontSize;
+        f32 remove_button_size = font_size + 4.0f * 2.0f;
         ImGui::SameLine(region.x - remove_button_size * 0.5f);
         bool remove = false;
-        if (ImGui::Button("-", ImVec2{ remove_button_size, remove_button_size })) {
+        if (ImGui::Button("\u2715", ImVec2{ remove_button_size, remove_button_size })) {
             remove = true;
         }
 
@@ -291,14 +318,84 @@ void PropertiesPanel::render_component(Entity entity, string name, Callback call
     }
 }
 
-template <typename T>
-void PropertiesPanel::render_add_component(Entity entity, string name) {
-    if (!entity.has<T>()) {
-        if (ImGui::MenuItem(name.data())) {
-            entity.add<T>(T());
-            ImGui::CloseCurrentPopup();
+template <typename Callback>
+bool PropertiesPanel::render_property(const char *name, bool has_remove_button, Callback callback) {
+    ImGui::PushID(name);
+
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, 100.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
+    ImGui::Text("%s", name);
+    ImGui::NextColumn();
+
+    ImVec2 region = ImGui::GetContentRegionAvail();
+    f32 width = region.x;
+    f32 remove_button_size;
+
+    if (has_remove_button) {
+        ImGuiIO& io = ImGui::GetIO();
+        f32 font_size = io.FontDefault->FontSize;
+        remove_button_size = font_size + 4.0f * 2.0f;
+        width -= remove_button_size;
+    }
+
+    ImGui::PushItemWidth(width);
+
+    callback();    
+
+    ImGui::PopItemWidth();
+
+    bool remove = false;
+    if (has_remove_button) {
+        ImGui::SameLine(0.0f, 0.0f);
+
+        if (ImGui::Button("\u2715", ImVec2{ remove_button_size, remove_button_size })) {
+            remove = true;
         }
-    } 
+    }
+
+    ImGui::PopStyleVar();
+    ImGui::Columns(1);
+    ImGui::PopID();
+
+    return remove;
+}
+
+void PropertiesPanel::render_vec_xyz(glm::vec3 *vec, const char *label, const char *id) {
+    ImVec2 region = ImGui::GetContentRegionAvail();
+    ImGui::PushID(id);
+
+    ImGui::Columns(2);
+    ImGui::SetColumnWidth(0, 100.0f);
+
+    ImGui::Text("%s", label);
+    ImGui::NextColumn();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
+
+    f32 label_width = ImGui::CalcTextSize("M").x;
+    ImGui::PushItemWidth(((region.x - 100.0f) / 3) - label_width);
+
+    ImGui::PushStyleColor(ImGuiCol_Button, {0.35f, 0.1f, 0.1f, 1.0f});
+    ImGui::Button("X"); ImGui::SameLine();
+    ImGui::DragFloat("##x", &vec->x, 0.05f, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
+    ImGui::PopStyleColor();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, {0.1f, 0.35f, 0.1f, 1.0f});
+    ImGui::Button("Y"); ImGui::SameLine();
+    ImGui::DragFloat("##y", &vec->y, 0.05f, 0.0f, 0.0f, "%.2f"); ImGui::SameLine();
+    ImGui::PopStyleColor();
+
+    ImGui::PushStyleColor(ImGuiCol_Button, {0.1f, 0.1f, 0.35f, 1.0f});
+    ImGui::Button("Z"); ImGui::SameLine();
+    ImGui::DragFloat("##z", &vec->z, 0.05f, 0.0f, 0.0f, "%.2f");
+    ImGui::PopStyleColor();
+
+    ImGui::PopItemWidth();
+    ImGui::PopStyleVar();
+
+    ImGui::Columns(1);
+    ImGui::PopID();
 }
 
 void ContentBrowser::render() {
