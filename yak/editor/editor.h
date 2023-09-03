@@ -22,6 +22,7 @@ struct RendererImGui {
 struct Engine;
 struct Framebuffer;
 struct Project;
+struct Camera;
 struct Editor : public EventHandler {
     Engine *engine;
     Window *window;
@@ -32,6 +33,7 @@ struct Editor : public EventHandler {
     PropertiesPanel *properties_panel;
     ContentBrowser *content_browser;
     RenderStatsPanel *render_stats_panel;
+    Camera *camera;
     Entity selection;
 
     Editor(Window *window, Project *project);

@@ -8,6 +8,7 @@
 
 #include "core/engine.h"
 #include "core/window.h"
+#include "editor/camera.h"
 #include "editor/project.h"
 #include "entity/components.h"
 #include "gfx/renderer.h"
@@ -153,6 +154,7 @@ Editor::Editor(Window *window, Project *project)
     properties_panel = new PropertiesPanel(project->assets);
     content_browser = new ContentBrowser();
     render_stats_panel = new RenderStatsPanel();
+    camera = new Camera(30.0f, 1.0f, 0.1f, 1000.0f);
 }
 
 Editor::~Editor() {
@@ -163,6 +165,7 @@ Editor::~Editor() {
     delete scene_hierarchy;
     delete properties_panel;
     delete content_browser;
+    delete camera;
 }
 
 void Editor::init() {
@@ -200,7 +203,7 @@ void Editor::render() {
 
     ImGui::SetNextWindowDockID(dockspace);
 
-    scene_view->render();
+    scene_view->render(camera);
     scene_hierarchy->render(engine->scene);
     properties_panel->render(engine->scene, selection);
     content_browser->render();
@@ -212,8 +215,8 @@ void Editor::render() {
 void Editor::render_menu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Files")) {
-            if (ImGui::MenuItem("Save")) project->save();
-            if (ImGui::MenuItem("Exit")) engine->stop();
+            if (ImGui::MenuItem("Save", "Cmd+S")) project->save();
+            if (ImGui::MenuItem("Exit", "Cmd+Q")) engine->stop();
 
             ImGui::EndMenu();
         }
@@ -231,6 +234,17 @@ void Editor::handle_event(Event event) {
             scene_view->on_mouse_button(event.button, event.action);
         } break;
         case Event::MOUSE_MOVE: {
+        } break;
+        case Event::KEY: {
+            if (event.action == GLFW_RELEASE) {
+                if (event.mods & GLFW_MOD_SUPER) {
+                    if (event.button == GLFW_KEY_S) {
+                        project->save();
+                    } else if (event.button == GLFW_KEY_Q) {
+                        engine->stop();
+                    }
+                }
+            }
         } break;
     }
 

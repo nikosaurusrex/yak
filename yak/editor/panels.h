@@ -6,6 +6,7 @@
 #include "entity/ecs.h"
 #include "entity/scene.h"
 
+struct Camera;
 struct Framebuffer;
 struct Engine;
 struct SceneView {
@@ -20,11 +21,12 @@ struct SceneView {
     glm::mat4 proj_mat;
     glm::mat4 view_mat;
 
+    SceneView() = default;
     SceneView(Engine *engine, Entity *selection);
     ~SceneView();
 
     void init();
-    void render();
+    void render(Camera *camera);
 
     void resize();
 
@@ -34,6 +36,7 @@ struct SceneView {
 struct SceneHierarchy {
     Entity *selection;
 
+    SceneHierarchy() = default;
     SceneHierarchy(Entity *selection);
 
     void render(Scene *scene);
@@ -43,6 +46,7 @@ struct Assets;
 struct PropertiesPanel {
     Assets *assets;
 
+    PropertiesPanel() = default;
     PropertiesPanel(Assets *assets);
 
     void render(Scene *scene, Entity entity);
@@ -62,10 +66,14 @@ struct PropertiesPanel {
 };
 
 struct ContentBrowser {
+    ContentBrowser() = default;
+
     void render();
 };
 
 struct RenderStatsPanel {
+    RenderStatsPanel() = default;
+
     void render();
 };
 

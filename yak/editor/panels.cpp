@@ -5,6 +5,7 @@
 #include "ImGuizmo.h"
 
 #include "core/engine.h"
+#include "editor/camera.h"
 #include "editor/project.h"
 #include "entity/scene.h"
 #include "gfx/framebuffer.h"
@@ -26,7 +27,7 @@ void SceneView::init() {
     );
 }
 
-void SceneView::render() {
+void SceneView::render(Camera *camera) {
     ImGui::Begin("Scene");
 
     offset = ImGui::GetCursorScreenPos();
@@ -45,11 +46,10 @@ void SceneView::render() {
     if (need_resize) {
         framebuffer->resize(width, height);
         Renderer2D::resize(width, height);
+        camera->resize(width, height);
 
-        f32 aspect = region.x / region.y;
-
-        proj_mat = glm::ortho<f32>(-aspect, aspect, -1.0f, 1.0f, -1.0f, 1.0f);
-        view_mat = glm::translate(glm::mat4(1.0f), glm::vec3(0.0));
+        proj_mat = camera->projection;
+        view_mat = camera->view;
 
         Shaders::load_for_all("view_mat", view_mat);
         Shaders::load_for_all("proj_mat", proj_mat);

@@ -8,7 +8,8 @@ struct Event {
     enum EventType {
         RESIZE,
         MOUSE_BUTTON,
-        MOUSE_MOVE
+        MOUSE_MOVE,
+        KEY
     };
 
     EventType type;

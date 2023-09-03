@@ -22,7 +22,7 @@ static void mouse_button_callback(GLFWwindow *handle, s32 button, s32 action, s3
 
     Event event;
     event.type = Event::MOUSE_BUTTON;
-    event.button = button; 
+    event.button = button;
     event.action = action;
     event.mods = mods;
 
@@ -38,6 +38,20 @@ static void cursor_position_callback(GLFWwindow *handle, f64 xpos, f64 ypos) {
     event.type = Event::MOUSE_MOVE;
     event.xpos = xpos;
     event.ypos = ypos;
+
+    handler->handle_event(event);
+}
+
+static void key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action, s32 mods) {
+    EventHandler *handler = (EventHandler *) glfwGetWindowUserPointer(handle);
+
+    if (!handler) return;
+
+    Event event;
+    event.type = Event::KEY;
+    event.button = key;
+    event.action = action;
+    event.mods = mods;
 
     handler->handle_event(event);
 }
@@ -85,6 +99,7 @@ void Window::create() {
     glfwSetWindowSizeCallback(handle, window_resize);
     glfwSetMouseButtonCallback(handle, mouse_button_callback);
     glfwSetCursorPosCallback(handle, cursor_position_callback);
+    glfwSetKeyCallback(handle, key_callback);
 
     glfwShowWindow(handle);
 }
