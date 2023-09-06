@@ -12,7 +12,7 @@ struct Renderer2D;
 struct RendererImGui;
 struct Engine : public EventHandler {
     Window *window = 0;
-    Scene *scene;
+    Scene *scene = 0;
     Assets *assets;
     bool running = false;
     Layers layers;
@@ -21,7 +21,7 @@ struct Engine : public EventHandler {
     u64 frames = 0;
 
     Engine(Window *window);
-    Engine(Window *window, Scene *scene, Assets *assets);
+    Engine(Window *window, Assets *assets);
     ~Engine();
 
     void init();

@@ -11,7 +11,7 @@
 #include "gfx/texture.h"
 #include "glm/ext/matrix_transform.hpp"
 
-GameLayer::GameLayer(Scene *scene) : scene(scene) {
+GameLayer::GameLayer() {
 }
 
 void GameLayer::init() {
@@ -21,7 +21,7 @@ void GameLayer::init() {
 void GameLayer::deinit() {
 }
 
-void GameLayer::render() {
+void GameLayer::render(Scene *scene) {
     auto entities = scene->get_entities_with_component<RendererComponent>();
 
     for (auto entity : entities) {

@@ -113,6 +113,8 @@ void SceneView::resize() {
 }
 
 void SceneView::on_mouse_button(s32 button, s32 action) {
+    if (!engine->scene) return;
+
     if (action == GLFW_RELEASE) {
         auto[mx, my] = ImGui::GetMousePos();
         mx -= offset.x;
@@ -139,6 +141,10 @@ SceneHierarchy::SceneHierarchy(Entity *selection)
 
 void SceneHierarchy::render(Scene *scene) {
     ImGui::Begin("Scene Hierarchy");
+    if (!scene) {
+        ImGui::End();
+        return;
+    }
 
     auto entities = scene->get_entities();  
     for (auto entity : entities) {

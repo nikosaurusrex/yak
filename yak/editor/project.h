@@ -7,12 +7,12 @@
 
 #include "entity/scene.h"
 
-struct Project;
-struct ProjectFile {
+struct SceneFile {
     string path;
-    Project *project;
+    Scene *scene;
+    Assets *assets;
 
-    ProjectFile(string path, Project *project);
+    SceneFile(string path, Scene *scene, Assets *assets);
 
     void read();
     glm::vec3 read_vec3(std::ifstream &inf);
@@ -23,10 +23,20 @@ struct ProjectFile {
     void write(std::ofstream &of, glm::vec4 vec);
 };
 
+struct Project;
+struct ProjectFile {
+    string path;
+    Project *project;
+
+    ProjectFile(string path, Project *project);
+
+    void read();
+    void write();
+};
+
 struct Project {
     string path;
     string name;
-    Scene *scene;
     Assets *assets;
 
     Project(string path);
@@ -36,5 +46,8 @@ struct Project {
     void load();
     void save();
 };
+
+Scene *load_scene_file(string path, Assets *assets);
+void save_scene_file(Scene *scene, Assets *assets);
 
 #endif

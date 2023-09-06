@@ -17,6 +17,10 @@ Texture *Assets::load_texture(string path) {
     return texture;
 }
 
+Scene::Scene(string path)
+    : path(path) {
+}
+
 Entity Scene::create_entity(string tag) {
     EntityId id = registry.create();
     Entity entity = {&this->registry, id};

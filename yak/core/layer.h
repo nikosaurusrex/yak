@@ -3,6 +3,7 @@
 
 #include "yakpch.h"
 
+#include "entity/scene.h"
 #include "gfx/renderer.h"
 
 struct Layer {
@@ -13,7 +14,7 @@ struct Layer {
     virtual void init() = 0;
     virtual void deinit() = 0;
 
-    virtual void render() = 0;
+    virtual void render(Scene *scene) = 0;
 };
 
 struct Layers {

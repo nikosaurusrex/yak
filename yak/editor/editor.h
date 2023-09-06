@@ -50,6 +50,8 @@ struct Editor : public EventHandler {
     void render();
     void render_menu();
 
+    void switch_scene(Scene *scene);
+
     virtual void handle_event(Event event) override;
 };
 

@@ -4,14 +4,12 @@
 #include "layer.h"
 
 struct GameLayer : public Layer {
-    Scene *scene;
-
-    GameLayer(Scene *scene);
+    GameLayer();
 
     virtual void init() override;
     virtual void deinit() override;
 
-    virtual void render() override;
+    virtual void render(Scene *scene) override;
 };
 
 #endif

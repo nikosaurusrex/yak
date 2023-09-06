@@ -144,7 +144,7 @@ void RendererImGui::end(s32 width, s32 height) {
 
 Editor::Editor(Window *window, Project *project) 
     : window(window), project(project) {
-    engine = new Engine(window, project->scene, project->assets);
+    engine = new Engine(window, project->assets);
     scene_view = new SceneView(engine, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
     properties_panel = new PropertiesPanel(project->assets);
@@ -227,6 +227,10 @@ void Editor::render_menu() {
     } 
 }
 
+void Editor::switch_scene(Scene *scene) {
+    engine->scene = scene;
+}
+
 void Editor::handle_event(Event event) {
     if (mode != MODE_EDIT) {
         engine->handle_event(event);
@@ -247,6 +251,10 @@ void Editor::handle_event(Event event) {
                 if (event.mods & GLFW_MOD_SUPER) {
                     if (event.button == GLFW_KEY_S) {
                         project->save();
+                        if (engine->scene) {
+                            save_scene_file(engine->scene, project->assets);
+                        }
+
                     } else if (event.button == GLFW_KEY_Q) {
                         engine->stop();
                     }
@@ -259,9 +267,14 @@ void Editor::handle_event(Event event) {
 void run_editor() {
     Window *window = new Window("Engine", 1920, 1080);
     Project *project = new Project("/Users/niko/Desktop/example/");
+
     Editor editor(window, project);
 
     editor.init();
+
+    Scene *scene = load_scene_file("/Users/niko/Desktop/example/Scenes/Test.yak", project->assets);
+    editor.switch_scene(scene);
+
     window->set_event_handler(&editor);
     // window->expand();
     editor.run();

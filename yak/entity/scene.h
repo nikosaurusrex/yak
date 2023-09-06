@@ -16,6 +16,9 @@ struct Assets {
 struct Scene {
     EntityRegistry registry;
     map<EntityId, Entity> entity_map;
+    string path;
+
+    Scene(string path);
 
     Entity create_entity(string tag);
 
