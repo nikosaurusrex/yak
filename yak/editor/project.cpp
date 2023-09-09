@@ -149,13 +149,6 @@ void ProjectFile::read() {
         if (line == "[Project]") {
             std::getline(file, line);
             project->name = line;
-        } else if (line == "[Textures]") {
-            std::getline(file, line);
-
-            while (line != "[TexturesEnd]") {
-                assets->load_texture(line);
-                std::getline(file, line);
-            }
         }
     }
 }
@@ -165,22 +158,16 @@ void ProjectFile::write() {
 
     of << "[Project]\n";
     of << project->name << "\n";
-
-    of << "[Textures]\n";
-    for (auto kv : project->assets->textures) {
-        of << kv.first << "\n";
-    }
-    of << "[TexturesEnd]\n";
 }
 
 Project::Project(string path)
     : path(path) {
-    assets = new Assets(path + "Assets/");
+    assets = new Assets(path);
 }
 
 Project::Project(string path, string name)
     : path(path), name(name) {
-    assets = new Assets(path + "Assets/");
+    assets = new Assets(path);
 }
 
 Project::~Project() {
@@ -190,8 +177,6 @@ void Project::load() {
     if (!std::filesystem::is_directory(path)) {
         log_fatal("Invalid project path '%s'", path.c_str());
     }
-    
-    std::filesystem::create_directory(path + "Assets/");
 
     string project_file = path + "Project.yak";
 

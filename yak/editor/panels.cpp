@@ -259,13 +259,15 @@ void PropertiesPanel::render_components(Entity entity) {
             const char *texture_preview = "<None>";
             static int texture_selected = 0;
             if (component.texture) {
-                texture_preview = component.texture->path.c_str();
+                auto tex_name = std::filesystem::path(component.texture->path).filename();
+                texture_preview = tex_name.c_str();
             }
             if (ImGui::BeginCombo("##texture", texture_preview, 0)) {
                 s32 i = 0;
                 for (auto kv : assets->textures) {
                     bool selected = (texture_selected == i); 
-                    if (ImGui::Selectable(kv.first.c_str(), selected)) {
+                    auto tex_name = std::filesystem::path(kv.first).filename();
+                    if (ImGui::Selectable(tex_name.c_str(), selected)) {
                         texture_selected = i;
                         component.texture = kv.second;
                     }
@@ -423,8 +425,81 @@ void Toolbar::render(Editor *editor) {
     ImGui::End();
 }
 
+
+ContentBrowser::ContentBrowser(Editor *editor, string project_path)
+    : editor(editor), project_path(project_path), path(project_path) {
+}
+
+ContentBrowser::~ContentBrowser() {
+    delete img_file;
+    delete img_folder;
+}
+
+void ContentBrowser::init() {
+    img_file = new Texture("yak/assets/textures/file.png", GL_RGBA);
+    img_folder = new Texture("yak/assets/textures/folder.png", GL_RGBA);
+}
+
 void ContentBrowser::render() {
     ImGui::Begin("Content Browser");
+
+    f32 font_size = ImGui::GetFontSize();
+    if (ImGui::Button("\u21A9")) {
+        if (path != std::filesystem::path(project_path)) {
+            path = path.parent_path();
+        }
+    }
+
+    ImGui::SameLine();
+    auto relative_path = std::filesystem::relative(path, project_path);
+    ImGui::Text("%s", relative_path.c_str());
+
+    f32 icon_size = 80.0f;
+    f32 margin = 10.0f;
+    f32 cell_size = icon_size + margin;
+    f32 cells_x = (s32)(ImGui::GetContentRegionAvail().x / cell_size);
+    if (cells_x < 1) {
+        cells_x = 1;
+    }
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+    ImGui::Columns(cells_x, 0, false);
+
+    for (auto &dir : std::filesystem::directory_iterator(path)) {
+        auto &dpath = dir.path();
+        auto file_name = dpath.filename();
+        auto name = file_name.string();
+
+        if (dir.is_regular_file()) {
+            if (name == ".DS_Store") {
+                continue;
+            }
+        }
+
+        Texture *img = dir.is_directory() ? img_folder : img_file;
+
+        ImGui::PushID(name.c_str());
+        if (ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 })) {
+            if (dir.is_directory()) {
+                path /= file_name;
+            } else {
+                auto file_path = path / file_name;
+
+                if (file_path.extension() == ".scene") {
+                    Scene *scene = load_scene_file(file_path.string(), editor->project->assets);
+                    editor->switch_scene(scene);
+                }
+            }
+        }
+        ImGui::TextWrapped("%s", name.c_str());
+        ImGui::PopID();
+
+        ImGui::NextColumn();
+    }
+
+    ImGui::PopStyleColor();
+    ImGui::Columns(1);
 
     ImGui::End();
 }

@@ -3,8 +3,11 @@
 
 #include "imgui.h"
 
+#include <filesystem>
+
 #include "entity/ecs.h"
 #include "entity/scene.h"
+#include "gfx/texture.h"
 
 struct Camera;
 struct Framebuffer;
@@ -68,6 +71,16 @@ struct Toolbar {
 };
 
 struct ContentBrowser {
+    Editor *editor;
+    Texture *img_file;
+    Texture *img_folder;
+    std::filesystem::path project_path;
+    std::filesystem::path path;
+
+    ContentBrowser(Editor *editor, string project_path);
+    ~ContentBrowser();
+
+    void init();
     void render();
 };
 
@@ -77,6 +90,7 @@ struct RenderStatsPanel {
 
 struct DebugConsole {
     static void render();
+    static void append();
 };
 
 #endif

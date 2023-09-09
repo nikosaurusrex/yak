@@ -27,12 +27,13 @@ void RendererImGui::init(GLFWwindow *window) {
     static const ImWchar ranges[] = {
         0x0020, 0x00FF,
         0x2122, 0x2122,
+        0x21A9, 0x21A9,
         0x2715, 0x2715,
         0
     };
     
     // io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 18);
-    io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/DejaVuSans.ttf", 18, 0, ranges);
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/DejaVuSans.ttf", 16, 0, ranges);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -148,7 +149,7 @@ Editor::Editor(Window *window, Project *project)
     scene_view = new SceneView(engine, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
     properties_panel = new PropertiesPanel(project->assets);
-    content_browser = new ContentBrowser();
+    content_browser = new ContentBrowser(this, project->path);
     render_stats_panel = new RenderStatsPanel();
     toolbar = new Toolbar();
     camera = new Camera(30.0f, 1.0f, 0.1f, 1000.0f);
@@ -175,6 +176,7 @@ void Editor::init() {
     RendererImGui::init(window->handle);
 
     scene_view->init();
+    content_browser->init();
 }
 
 void Editor::run() {
@@ -209,7 +211,7 @@ void Editor::render() {
     render_stats_panel->render();
     toolbar->render(this);
 
-    DebugConsole::render();
+//    DebugConsole::render();
 
     RendererImGui::end(window->width, window->height);
 }
@@ -228,6 +230,11 @@ void Editor::render_menu() {
 }
 
 void Editor::switch_scene(Scene *scene) {
+    if (engine->scene) {
+        save_scene_file(engine->scene, project->assets);
+        delete engine->scene;
+    }
+
     engine->scene = scene;
 }
 
@@ -271,9 +278,6 @@ void run_editor() {
     Editor editor(window, project);
 
     editor.init();
-
-    Scene *scene = load_scene_file("/Users/niko/Desktop/example/Scenes/Test.yak", project->assets);
-    editor.switch_scene(scene);
 
     window->set_event_handler(&editor);
     // window->expand();
