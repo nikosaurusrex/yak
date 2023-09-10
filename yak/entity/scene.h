@@ -8,9 +8,10 @@ struct Assets {
     string assets_path;
     map<string, Texture *> textures;
 
-    Texture *load_texture(string path);
-
     Assets(string assets_path);
+
+    Texture *load_texture(string path);
+    Texture *get(string path);
 };
 
 struct Scene {

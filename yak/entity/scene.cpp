@@ -10,11 +10,18 @@ Texture *Assets::load_texture(string path) {
         return it->second;
     }
 
-    string p = assets_path + path;
-
-    Texture *texture = new Texture(p, path, GL_RGBA);
+    Texture *texture = new Texture(path, GL_RGBA);
     textures.insert({path, texture});
     return texture;
+}
+
+Texture *Assets::get(string path) {
+    auto it = textures.find(path);
+    if (it != textures.end()) {
+        return it->second;
+    }
+    
+    return 0;
 }
 
 Scene::Scene(string path)

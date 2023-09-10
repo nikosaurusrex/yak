@@ -491,28 +491,37 @@ void ContentBrowser::render() {
             }
         }
 
-        Texture *img = dir.is_directory() ? img_folder : img_file;
-
         ImGui::PushID(name.c_str());
-        ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
 
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            if (dir.is_directory()) {
+        if (dir.is_directory()) {
+            Texture *img = img_folder;
+            ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                 path /= file_name;
-            } else {
-                auto file_path = path / file_name;
+            }
+        } else {
+            auto file_path = path / file_name;
+            auto ext = file_path.extension();
+            auto assets = editor->project->assets;
+            Texture *img = img_file;
 
-                auto ext = file_path.extension();
+            if (ext == ".png") {
+                Texture *tex = assets->get(file_path);
+                if (tex) {
+                    img = tex;
+                }
+            }
+
+            ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                 if (ext == ".scene") {
                     Scene *scene = load_scene_file(file_path.string(), editor->project->assets);
                     editor->switch_scene(scene);
                 } else if (ext == ".png") {
-                    auto assets = editor->project->assets;
                     assets->load_texture(file_path);
                 }
             }
         }
-
 
         if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonRight)) {
             if (ImGui::MenuItem("Rename")) {

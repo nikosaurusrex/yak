@@ -7,11 +7,6 @@ Texture::Texture(string file_path, GLint format) {
     load(file_path, format);
 }
 
-Texture::Texture(string full_path, string relative_path, GLint format) {
-    path = relative_path;
-    load(full_path, format);
-}
-
 void Texture::load(string file_path, GLint format) {
     s32 w, h;
 
