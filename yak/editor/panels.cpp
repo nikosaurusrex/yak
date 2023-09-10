@@ -455,7 +455,7 @@ void ContentBrowser::render() {
 
     f32 font_size = ImGui::GetFontSize();
     if (ImGui::Button("\u21A9")) {
-        if (path != std::filesystem::path(project_path)) {
+        if (!std::filesystem::equivalent(project_path, path)) {
             path = path.parent_path();
         }
     }
