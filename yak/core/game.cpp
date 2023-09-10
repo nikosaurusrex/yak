@@ -1,9 +1,5 @@
 #include "game.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/quaternion.hpp>
-#include <glm/gtx/transform.hpp>
-
 #include "entity/components.h"
 #include "entity/ecs.h"
 #include "gfx/mesh.h"
@@ -47,9 +43,7 @@ void GameLayer::render(Scene *scene) {
             auto rotation = tc.rotation;
             auto scale = tc.scale;
 
-            glm::mat4 model_mat = glm::translate(glm::mat4(1.0f), translation) * 
-                        glm::toMat4(glm::quat(glm::radians(rotation))) *
-                        glm::scale(glm::mat4(1.0f), scale);
+            glm::mat4 model_mat = tc.transform();
 
             shader->load_matrix("model_mat", model_mat);
         }

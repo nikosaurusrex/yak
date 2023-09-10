@@ -20,6 +20,7 @@ struct SceneView {
     ImVec2 region;
     ImVec2 last_region;
     bool need_resize = true;
+    s32 guizmo_operation = 0;
 
     glm::mat4 proj_mat;
     glm::mat4 view_mat;
@@ -33,6 +34,7 @@ struct SceneView {
     void resize();
 
     void on_mouse_button(s32 button, s32 action);
+    void on_key_up(s32 key);
 };
 
 struct SceneHierarchy {

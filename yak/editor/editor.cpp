@@ -265,6 +265,8 @@ void Editor::handle_event(Event event) {
                     } else if (event.button == GLFW_KEY_Q) {
                         engine->stop();
                     }
+                } else {
+                    scene_view->on_key_up(event.button);
                 }
             }
         } break;

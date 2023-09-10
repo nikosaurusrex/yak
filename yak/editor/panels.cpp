@@ -77,23 +77,23 @@ void SceneView::render(Camera *camera) {
             TransformComponent &tc = entity.get<TransformComponent>();
             ImGuizmo::SetOrthographic(false);
             ImGuizmo::SetDrawlist();
+	    ImGuizmo::Enable(true);
 
             // ImGuizmo::SetRect(offset.x, offset.y, width, height);
             f32 w = ImGui::GetWindowWidth();
             f32 h = ImGui::GetWindowHeight();
             ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, w, h);
 
-            glm::mat4 translate;
+            glm::mat4 translate = tc.transform();
 
             ImGuizmo::Manipulate(
                 glm::value_ptr(view_mat),
                 glm::value_ptr(proj_mat),
-                ImGuizmo::OPERATION::TRANSLATE,
+                (ImGuizmo::OPERATION) guizmo_operation,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(translate)
             );
 
-            /*
             if (ImGuizmo::IsUsing()) {
                 ImGuizmo::DecomposeMatrixToComponents(
                     glm::value_ptr(translate),
@@ -101,7 +101,7 @@ void SceneView::render(Camera *camera) {
                     glm::value_ptr(tc.rotation),
                     glm::value_ptr(tc.scale)
                 );
-            }*/
+            }
         }
     }
     
@@ -132,6 +132,16 @@ void SceneView::on_mouse_button(s32 button, s32 action) {
                 *selection = Entity();
             }
         }
+    }
+}
+
+void SceneView::on_key_up(s32 key) {
+    if (key == GLFW_KEY_T) {
+        guizmo_operation = ImGuizmo::OPERATION::TRANSLATE;
+    } else if (key == GLFW_KEY_R) {
+        guizmo_operation = ImGuizmo::OPERATION::ROTATE;
+    } else if (key == GLFW_KEY_S) {
+        guizmo_operation = ImGuizmo::OPERATION::SCALE;
     }
 }
 
@@ -466,6 +476,10 @@ void ContentBrowser::render() {
 
     ImGui::Columns(cells_x, 0, false);
 
+    bool open_text_input = false;
+    static string text_input_mode = "";
+    static string text_input_context = "";
+
     for (auto &dir : std::filesystem::directory_iterator(path)) {
         auto &dpath = dir.path();
         auto file_name = dpath.filename();
@@ -480,22 +494,80 @@ void ContentBrowser::render() {
         Texture *img = dir.is_directory() ? img_folder : img_file;
 
         ImGui::PushID(name.c_str());
-        if (ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 })) {
+        ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
             if (dir.is_directory()) {
                 path /= file_name;
             } else {
                 auto file_path = path / file_name;
 
-                if (file_path.extension() == ".scene") {
+                auto ext = file_path.extension();
+                if (ext == ".scene") {
                     Scene *scene = load_scene_file(file_path.string(), editor->project->assets);
                     editor->switch_scene(scene);
+                } else if (ext == ".png") {
+                    auto assets = editor->project->assets;
+                    assets->load_texture(file_path);
                 }
             }
         }
+
+
+        if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonRight)) {
+            if (ImGui::MenuItem("Rename")) {
+                auto file_path = path / file_name;
+
+                open_text_input = true;
+                text_input_mode = "rename";
+                text_input_context = file_path;
+            }
+
+            if (ImGui::MenuItem("Delete")) {
+                auto file_path = path / file_name;
+                std::filesystem::remove_all(file_path);
+            }
+
+            ImGui::EndPopup();
+        }
+
         ImGui::TextWrapped("%s", name.c_str());
         ImGui::PopID();
 
         ImGui::NextColumn();
+    }
+
+    ImGuiPopupFlags popup_flags = ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems;
+    if (ImGui::BeginPopupContextWindow(0, popup_flags)) {
+        if (ImGui::MenuItem("Create Folder")) {
+            open_text_input = true;
+            text_input_mode = "create_folder";
+        }
+        ImGui::EndPopup();
+    }
+
+    if (open_text_input) {
+        ImGui::OpenPopup("POPUP_TEXT_INPUT");
+    }
+
+    if (ImGui::BeginPopup("POPUP_TEXT_INPUT")) {
+        ImGui::Text("Name");
+        static char buf[255];
+        ImGui::InputText("##text_input", buf, sizeof(buf));
+        if (ImGui::Button("Confirm")) {
+            ImGui::CloseCurrentPopup();
+
+            if (text_input_mode == "create_folder") {
+                auto new_dir = path / buf;
+                std::filesystem::create_directory(new_dir);
+            } else if (text_input_mode == "rename") {
+                auto new_dir = path / buf;
+                std::filesystem::rename(text_input_context, new_dir); 
+            }
+
+            buf[0] = 0;
+        }
+        ImGui::EndPopup();
     }
 
     ImGui::PopStyleColor();
