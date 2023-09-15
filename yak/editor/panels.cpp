@@ -269,14 +269,14 @@ void PropertiesPanel::render_components(Entity entity) {
             const char *texture_preview = "<None>";
             static int texture_selected = 0;
             if (component.texture) {
-                auto tex_name = std::filesystem::path(component.texture->path).filename();
+                auto tex_name = fs::path(component.texture->path).filename();
                 texture_preview = tex_name.c_str();
             }
             if (ImGui::BeginCombo("##texture", texture_preview, 0)) {
                 s32 i = 0;
                 for (auto kv : assets->textures) {
                     bool selected = (texture_selected == i); 
-                    auto tex_name = std::filesystem::path(kv.first).filename();
+                    auto tex_name = fs::path(kv.first).filename();
                     if (ImGui::Selectable(tex_name.c_str(), selected)) {
                         texture_selected = i;
                         component.texture = kv.second;
@@ -455,13 +455,13 @@ void ContentBrowser::render() {
 
     f32 font_size = ImGui::GetFontSize();
     if (ImGui::Button("\u21A9")) {
-        if (!std::filesystem::equivalent(project_path, path)) {
+        if (!fs::equivalent(project_path, path)) {
             path = path.parent_path();
         }
     }
 
     ImGui::SameLine();
-    auto relative_path = std::filesystem::relative(path, project_path);
+    auto relative_path = fs::relative(path, project_path);
     ImGui::Text("%s", relative_path.c_str());
 
     f32 icon_size = 80.0f;
@@ -480,65 +480,70 @@ void ContentBrowser::render() {
     static string text_input_mode = "";
     static string text_input_context = "";
 
-    for (auto &dir : std::filesystem::directory_iterator(path)) {
-        auto &dpath = dir.path();
-        auto file_name = dpath.filename();
-        auto name = file_name.string();
+    set<fs::path> directories; 
+    set<fs::path> files;
 
-        if (dir.is_regular_file()) {
-            if (name == ".DS_Store") {
-                continue;
-            }
+    for (auto &dir : fs::directory_iterator(path)) {
+        if (dir.is_directory()) {
+            directories.insert(dir.path());
+        } else {
+            files.insert(dir.path());
         }
+    }
+
+    for (auto &dir : directories) {
+        auto file_name = dir.filename();
+        auto name = file_name.string();
 
         ImGui::PushID(name.c_str());
 
-        if (dir.is_directory()) {
-            Texture *img = img_folder;
-            ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                path /= file_name;
-            }
-        } else {
-            auto file_path = path / file_name;
-            auto ext = file_path.extension();
-            auto assets = editor->project->assets;
-            Texture *img = img_file;
+        Texture *img = img_folder;
+        ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            path /= file_name;
+        }
 
-            if (ext == ".png") {
-                Texture *tex = assets->get(file_path);
-                if (tex) {
-                    img = tex;
-                }
-            }
+        item_popup(text_input_mode, text_input_context, open_text_input, file_name);
 
-            ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
-            if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                if (ext == ".scene") {
-                    Scene *scene = load_scene_file(file_path.string(), editor->project->assets);
-                    editor->switch_scene(scene);
-                } else if (ext == ".png") {
-                    assets->load_texture(file_path);
-                }
+        ImGui::TextWrapped("%s", name.c_str());
+        ImGui::PopID();
+
+        ImGui::NextColumn();
+    }
+
+    for (auto &file : files) {
+        auto file_name = file.filename();
+        auto name = file_name.string();
+
+        if (name == ".DS_Store") {
+            continue;
+        }
+
+        auto file_path = path / file_name;
+        auto ext = file_path.extension();
+        auto assets = editor->project->assets;
+        Texture *img = img_file;
+
+        ImGui::PushID(name.c_str());
+
+        if (ext == ".png") {
+            Texture *tex = assets->get(file_path);
+            if (tex) {
+                img = tex;
             }
         }
 
-        if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonRight)) {
-            if (ImGui::MenuItem("Rename")) {
-                auto file_path = path / file_name;
-
-                open_text_input = true;
-                text_input_mode = "rename";
-                text_input_context = file_path;
+        ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
+        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            if (ext == ".scene") {
+                Scene *scene = load_scene_file(file_path.string(), editor->project->assets);
+                editor->switch_scene(scene);
+            } else if (ext == ".png") {
+                assets->load_texture(file_path);
             }
-
-            if (ImGui::MenuItem("Delete")) {
-                auto file_path = path / file_name;
-                std::filesystem::remove_all(file_path);
-            }
-
-            ImGui::EndPopup();
         }
+
+        item_popup(text_input_mode, text_input_context, open_text_input, file_name);
 
         ImGui::TextWrapped("%s", name.c_str());
         ImGui::PopID();
@@ -568,10 +573,10 @@ void ContentBrowser::render() {
 
             if (text_input_mode == "create_folder") {
                 auto new_dir = path / buf;
-                std::filesystem::create_directory(new_dir);
+                fs::create_directory(new_dir);
             } else if (text_input_mode == "rename") {
                 auto new_dir = path / buf;
-                std::filesystem::rename(text_input_context, new_dir); 
+                fs::rename(text_input_context, new_dir); 
             }
 
             buf[0] = 0;
@@ -583,6 +588,24 @@ void ContentBrowser::render() {
     ImGui::Columns(1);
 
     ImGui::End();
+}
+
+void ContentBrowser::item_popup(string &text_input_mode, string &text_input_context, bool &open_text_input, fs::path &file_name) {
+    if (ImGui::BeginPopupContextItem(0, ImGuiPopupFlags_MouseButtonRight)) {
+        if (ImGui::MenuItem("Rename")) {
+            auto file_path = path / file_name;
+
+            open_text_input = true;
+            text_input_mode = "rename";
+            text_input_context = file_path;
+        }
+
+        if (ImGui::MenuItem("Delete")) {
+            auto file_path = path / file_name;
+            fs::remove_all(file_path);
+        }
+        ImGui::EndPopup();
+    }
 }
 
 void RenderStatsPanel::render() {

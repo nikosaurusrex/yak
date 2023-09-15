@@ -9,6 +9,8 @@
 #include "entity/scene.h"
 #include "gfx/texture.h"
 
+namespace fs = std::filesystem;
+
 struct Camera;
 struct Framebuffer;
 struct Engine;
@@ -76,14 +78,16 @@ struct ContentBrowser {
     Editor *editor;
     Texture *img_file;
     Texture *img_folder;
-    std::filesystem::path project_path;
-    std::filesystem::path path;
+    fs::path project_path;
+    fs::path path;
 
     ContentBrowser(Editor *editor, string project_path);
     ~ContentBrowser();
 
     void init();
     void render();
+
+    void item_popup(string &text_input_mode, string &text_input_context, bool &open_text_input, fs::path &file_name);
 };
 
 struct RenderStatsPanel {

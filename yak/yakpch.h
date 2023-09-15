@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include <typeindex>
 #include <any>
+#include <set>
+#include <string>
+#include <typeindex>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #ifdef _WIN32
 #define GLEW_STATIC
@@ -34,6 +35,9 @@ using map = std::unordered_map<K, V>;
 
 template <typename A, typename B>
 using pair = std::pair<A, B>;
+
+template <typename T>
+using set = std::set<T>;
 
 typedef uint64_t u64;
 typedef uint32_t u32;
