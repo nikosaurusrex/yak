@@ -51,6 +51,7 @@ struct Editor : public EventHandler {
     void render_menu();
 
     void switch_scene(Scene *scene);
+    void switch_mode(u64 mode);
 
     virtual void handle_event(Event event) override;
 };

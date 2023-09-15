@@ -53,6 +53,21 @@ void SceneFile::read() {
                                     color
                                 )
                             );
+                        } else if (line == "[Camera]") {
+                            glm::vec3 position = read_vec3(file);
+
+                            std::getline(file, line);
+                            f32 rotation = std::stof(line);
+
+                            std::getline(file, line);
+                            bool is_main_camera = line == "true";
+
+                            entity.add<CameraComponent>(CameraComponent());
+
+                            auto &component = entity.get<CameraComponent>();
+                            component.position = position;
+                            component.rotation = rotation;
+                            component.is_main_camera = is_main_camera;
                         }
 
                         std::getline(file, line);
@@ -119,6 +134,15 @@ void SceneFile::write() {
             write(of, rc.color);
         }
 
+        if (entity.has<CameraComponent>()) {
+            of << "[Camera]\n";
+            auto &cc = entity.get<CameraComponent>();
+            
+            write(of, cc.position);
+            write(of, cc.rotation);
+            write(of, cc.is_main_camera);
+        }
+
         of << "[EntityEnd]\n";
     }
     of << "[EntitiesEnd]\n";
@@ -132,6 +156,15 @@ void SceneFile::write(std::ofstream &of, glm::vec3 vec) {
 
 void SceneFile::write(std::ofstream &of, glm::vec4 vec) {
     of << vec.x << " " << vec.y << " " << vec.z << " " << vec.w << "\n";
+}
+
+void SceneFile::write(std::ofstream &of, f32 value) {
+    of << value << "\n";
+}
+
+void SceneFile::write(std::ofstream &of, bool value) {
+    string val = value ? "true" : "false";
+    of << val << "\n";
 }
 
 ProjectFile::ProjectFile(string path, Project *project)

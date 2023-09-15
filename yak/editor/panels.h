@@ -12,10 +12,11 @@
 namespace fs = std::filesystem;
 
 struct Camera;
+struct Editor;
 struct Framebuffer;
 struct Engine;
 struct SceneView {
-    Engine *engine;
+    Editor *editor;
     Entity *selection;
     Framebuffer *framebuffer;
     ImVec2 offset;
@@ -27,7 +28,7 @@ struct SceneView {
     glm::mat4 proj_mat;
     glm::mat4 view_mat;
 
-    SceneView(Engine *engine, Entity *selection);
+    SceneView(Editor *editor, Entity *selection);
     ~SceneView();
 
     void init();
@@ -49,9 +50,10 @@ struct SceneHierarchy {
 
 struct Assets;
 struct PropertiesPanel {
+    Editor *editor;
     Assets *assets;
 
-    PropertiesPanel(Assets *assets);
+    PropertiesPanel(Editor *editor, Assets *assets);
 
     void render(Scene *scene, Entity entity);
 
@@ -69,7 +71,6 @@ struct PropertiesPanel {
     void render_vec_xyz(glm::vec3 *vec, const char *label, const char *id);
 };
 
-struct Editor;
 struct Toolbar {
     void render(Editor *editor);
 };

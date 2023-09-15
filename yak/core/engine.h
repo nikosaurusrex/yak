@@ -4,6 +4,7 @@
 #include "core/layer.h"
 #include "core/event.h"
 #include "entity/scene.h"
+#include "entity/components.h"
 
 struct Assets;
 struct Scene;
@@ -28,6 +29,7 @@ struct Engine : public EventHandler {
     void run();
     void loop();
     void update();
+    void update_editor();
     void render();
     void stop();
     

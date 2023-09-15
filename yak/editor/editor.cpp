@@ -12,6 +12,7 @@
 #include "editor/project.h"
 #include "entity/components.h"
 #include "gfx/renderer.h"
+#include "gfx/shader.h"
 #include "gfx/texture.h"
 
 void RendererImGui::init(GLFWwindow *window) {
@@ -146,9 +147,9 @@ void RendererImGui::end(s32 width, s32 height) {
 Editor::Editor(Window *window, Project *project) 
     : window(window), project(project) {
     engine = new Engine(window, project->assets);
-    scene_view = new SceneView(engine, &selection);
+    scene_view = new SceneView(this, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
-    properties_panel = new PropertiesPanel(project->assets);
+    properties_panel = new PropertiesPanel(this, project->assets);
     content_browser = new ContentBrowser(this, project->path);
     render_stats_panel = new RenderStatsPanel();
     toolbar = new Toolbar();
@@ -183,7 +184,11 @@ void Editor::run() {
     engine->run();
 
     while (engine->running) {
-        engine->update();
+        if (mode == MODE_PLAY) {
+            engine->update();
+        } else {
+            engine->update_editor();
+        }
 
         render();
 
@@ -236,6 +241,16 @@ void Editor::switch_scene(Scene *scene) {
     }
 
     engine->scene = scene;
+}
+
+void Editor::switch_mode(u64 mode) {
+    this->mode = mode;
+    selection = {};
+
+    if (mode == MODE_EDIT) {
+        Shaders::load_for_all("view_mat", scene_view->view_mat);
+        Shaders::load_for_all("proj_mat", scene_view->proj_mat);
+    }
 }
 
 void Editor::handle_event(Event event) {

@@ -12,8 +12,8 @@
 #include "gfx/framebuffer.h"
 #include "gfx/shader.h"
 
-SceneView::SceneView(Engine *engine, Entity *selection)
-    : engine(engine), selection(selection) {
+SceneView::SceneView(Editor *editor, Entity *selection)
+    : editor(editor), selection(selection) {
 }
 
 SceneView::~SceneView() {
@@ -47,10 +47,11 @@ void SceneView::render(Camera *camera) {
     if (need_resize) {
         framebuffer->resize(width, height);
         Renderer2D::resize(width, height);
+
         camera->resize(width, height);
 
-        proj_mat = camera->projection;
         view_mat = camera->view;
+        proj_mat = camera->projection;
 
         Shaders::load_for_all("view_mat", view_mat);
         Shaders::load_for_all("proj_mat", proj_mat);
@@ -59,7 +60,7 @@ void SceneView::render(Camera *camera) {
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    engine->render();
+    editor->engine->render();
 
     framebuffer->unbind();
 
@@ -113,6 +114,8 @@ void SceneView::resize() {
 }
 
 void SceneView::on_mouse_button(s32 button, s32 action) {
+    Engine *engine = editor->engine;
+
     if (!engine->scene) return;
 
     if (action == GLFW_RELEASE) {
@@ -202,7 +205,8 @@ void SceneHierarchy::render(Scene *scene) {
     ImGui::End();
 }
 
-PropertiesPanel::PropertiesPanel(Assets *assets) : assets(assets) {
+PropertiesPanel::PropertiesPanel(Editor *editor, Assets *assets) 
+    : editor(editor), assets(assets) {
 }
 
 void PropertiesPanel::render(Scene *scene, Entity entity) {
@@ -230,6 +234,7 @@ void PropertiesPanel::render(Scene *scene, Entity entity) {
 
         render_add_component<TransformComponent>(entity, "Transform");
         render_add_component<RendererComponent>(entity, "Renderer");
+        render_add_component<CameraComponent>(entity, "Camera");
 
         ImGui::EndPopup();
     }
@@ -293,6 +298,22 @@ void PropertiesPanel::render_components(Entity entity) {
         });
         if (remove) {
             component.texture = 0;
+        }
+    });
+
+    render_component<CameraComponent>(entity, "Camera", [this](auto &component) {
+        render_vec_xyz(&component.position, "Position", "##position");
+        render_property("Rotation", false, [&component] {
+            ImGui::DragFloat("##rotation", &component.rotation, 0.05f, 0.0f, 0.0f, "%.2f"); 
+        });
+        if (ImGui::Button("Set Main Camera")) {
+            auto entities = editor->engine->scene->get_entities_with_component<CameraComponent>();
+            for (auto &entity : entities) {
+                auto &camera_component = entity.get<CameraComponent>();
+
+                camera_component.is_main_camera = false;
+            }
+            component.is_main_camera = true;
         }
     });
 
@@ -420,15 +441,13 @@ void PropertiesPanel::render_vec_xyz(glm::vec3 *vec, const char *label, const ch
 void Toolbar::render(Editor *editor) {
     ImGui::Begin("toolbar", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-
     if (editor->mode == MODE_EDIT) {
         if (ImGui::Button("Play")) {
-            editor->mode = MODE_PLAY;
-            editor->selection = {};
+            editor->switch_mode(MODE_PLAY);
         }
     } else {
         if (ImGui::Button("Edit")) {
-            editor->mode = MODE_EDIT;
+            editor->switch_mode(MODE_EDIT);
         }
     }
 

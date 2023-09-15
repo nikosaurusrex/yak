@@ -59,6 +59,18 @@ void Engine::loop() {
 }
 
 void Engine::update() {
+    auto entities = scene->get_entities_with_component<CameraComponent>();
+    for (auto &entity : entities) {
+        auto &camera_component = entity.get<CameraComponent>();
+        if (camera_component.is_main_camera) {
+            camera_component.calculate_view_matrix();
+            Shaders::load_for_all("view_mat", camera_component.view);
+            Shaders::load_for_all("proj_mat", camera_component.projection);
+            
+            break;
+        }
+    }
+
     frames++;
     f64 fps_time_now = glfwGetTime();
     f64 fps_time_delta = fps_time_now - fps_time_last;
@@ -74,6 +86,20 @@ void Engine::update() {
     /* movement */
 
     /* collision */
+}
+
+void Engine::update_editor() {
+    frames++;
+    f64 fps_time_now = glfwGetTime();
+    f64 fps_time_delta = fps_time_now - fps_time_last;
+    if (fps_time_delta >= 1.0f) {
+        RenderStats::fps = frames;
+        RenderStats::mspf = (fps_time_delta * 1000) / (f32)(frames);
+
+        frames = 0;
+
+        fps_time_last = fps_time_now;
+    }
 }
 
 void Engine::render() {
@@ -96,6 +122,8 @@ void Engine::handle_event(Event event) {
         case Event::RESIZE: {
             window->width = event.width;
             window->height = event.height;
+                
+            /* TODO: RECALCULATE MAIN CAMERA */
         } break;
         default:
             break;

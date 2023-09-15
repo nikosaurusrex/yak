@@ -21,6 +21,8 @@ struct SceneFile {
     void write();
     void write(std::ofstream &of, glm::vec3 vec);
     void write(std::ofstream &of, glm::vec4 vec);
+    void write(std::ofstream &of, f32 value);
+    void write(std::ofstream &of, bool value);
 };
 
 struct Project;
