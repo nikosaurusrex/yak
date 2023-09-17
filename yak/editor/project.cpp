@@ -5,193 +5,267 @@
 
 #include "entity/components.h"
 
-SceneFile::SceneFile(string path, Scene *scene, Assets *assets)
-    : path(path), scene(scene), assets(assets) {
-}
+template <typename T>
+struct ConfigValueEncoder {
+};
 
-void SceneFile::read() {
-    std::ifstream file(path);
+template<>
+struct ConfigValueEncoder<string> {
+	string encode(string value) {
+		return value;
+	}
 
-    string line;
+	string decode(string value) {
+		return value;
+	}
+};
 
-    while (std::getline(file, line)) {
-        if (line == "[Entities]") {
-            std::getline(file, line);
+template<>
+struct ConfigValueEncoder<bool> {
+	string encode(bool value) {
+		return value ? "true" : "false";
+	}
 
-            while (line != "[EntitiesEnd]") {
-                if (line == "[Entity]") {
-                    std::getline(file, line);
-                    Entity entity = scene->create_entity(line);
-                    
-                    std::getline(file, line);
-                    while (line != "[EntityEnd]") {
-                        if (line == "[Transform]") {
-                            glm::vec3 translation = read_vec3(file);
-                            glm::vec3 rotation = read_vec3(file);
-                            glm::vec3 scale = read_vec3(file);
+	bool decode(string value) {
+		return value == "true" ? true : false;
+	}
+};
 
-                            entity.add<TransformComponent>(
-                                TransformComponent(translation, rotation, scale)
-                            );
-                        } else if (line == "[Renderer]") {
-                            std::getline(file, line);
+template<>
+struct ConfigValueEncoder<const char *> {
+	string encode(const char *value) {
+		return string(value);
+	}
 
-                            Mesh *mesh = Meshes::quad;
-                            std::getline(file, line);
+	const char *decode(string value) {
+		const char *cstr = value.c_str();
+		return strdup(cstr);
+	}
+};
 
-                            Texture *texture = 0;
-                            if (line != "<None>") {
-                                texture = assets->load_texture(line);
-                            }
+template<size_t n>
+struct ConfigValueEncoder<char[n]> {
+	string encode(const char *value) {
+		return string(value);
+	}
+};
 
-                            glm::vec4 color = read_vec4(file);
+template<>
+struct ConfigValueEncoder<s32> {
+	string encode(s32 value) {
+		std::stringstream stream;
 
-                            entity.add<RendererComponent>(
-                                RendererComponent(
-                                    mesh,
-                                    texture,
-                                    color
-                                )
-                            );
-                        } else if (line == "[Camera]") {
-                            glm::vec3 position = read_vec3(file);
+		stream << value;
 
-                            std::getline(file, line);
-                            f32 rotation = std::stof(line);
+		return stream.str();
+	}
 
-                            std::getline(file, line);
-                            bool is_main_camera = line == "true";
+	s32 decode(string value) {
+		return std::stoi(value);
+	}
+};
 
-                            entity.add<CameraComponent>(CameraComponent());
+template<>
+struct ConfigValueEncoder<f32> {
+	string encode(f32 value) {
+		std::stringstream stream;
 
-                            auto &component = entity.get<CameraComponent>();
-                            component.position = position;
-                            component.rotation = rotation;
-                            component.is_main_camera = is_main_camera;
-                        }
+		stream << value;
 
-                        std::getline(file, line);
-                    }
-                    std::getline(file, line);
-                }
-            }
-        }
-    }
+		return stream.str();
+	}
 
-    file.close();
-}
+	f32 decode(string value) {
+		return std::stof(value);
+	}
+};
 
-glm::vec3 SceneFile::read_vec3(std::ifstream &inf) {
-    string line;
-    std::getline(inf, line);
-    std::stringstream ss(line);
+template<>
+struct ConfigValueEncoder<glm::vec3> {
+	string encode(glm::vec3 value) {
+		std::stringstream stream;
 
-    f32 x, y, z;
-    ss >> x >> y >> z;
-    return glm::vec3(x, y, z);
-}
+		stream << value.x << " " << value.y << " " << value.z;
 
-glm::vec4 SceneFile::read_vec4(std::ifstream &inf) {
-    string line;
-    std::getline(inf, line);
-    std::stringstream ss(line);
+		return stream.str();
+	}
 
-    f32 x, y, z, w;
-    ss >> x >> y >> z >> w;
-    return glm::vec4(x, y, z, w);
-}
+	glm::vec3 decode(string value) {
+		std::stringstream stream(value);
 
-void SceneFile::write() {
-    std::ofstream of(path);
-    
-    of << "[Entities]\n";
-    for (auto kv : scene->entity_map) {
-        Entity entity = kv.second;
+		glm::vec3 vec;
+		stream >> vec.x;	
+		stream >> vec.y;	
+		stream >> vec.z;	
 
-        of << "[Entity]\n";
-        of << entity.get<TagComponent>().tag << "\n";
-        of << "\n";
+		return vec;
+	}
+};
 
-        if (entity.has<TransformComponent>()) {
-            of << "[Transform]\n";
-            auto &tc = entity.get<TransformComponent>();
-            
-            write(of, tc.translation);
-            write(of, tc.rotation);
-            write(of, tc.scale);
-        }
+template<>
+struct ConfigValueEncoder<glm::vec4> {
+	string encode(glm::vec4 value) {
+		std::stringstream stream;
 
-        if (entity.has<RendererComponent>()) {
-            of << "[Renderer]\n";
-            auto &rc = entity.get<RendererComponent>();
-            
-            of << "Quad\n";
-            if (rc.texture) {
-                of << rc.texture->path << "\n";
-            } else {
-                of << "<None>\n";
-            }
-            write(of, rc.color);
-        }
+		stream << value.x << " " << value.y << " " << value.z << " " << value.w;
 
-        if (entity.has<CameraComponent>()) {
-            of << "[Camera]\n";
-            auto &cc = entity.get<CameraComponent>();
-            
-            write(of, cc.position);
-            write(of, cc.rotation);
-            write(of, cc.is_main_camera);
-        }
+		return stream.str();
+	}
 
-        of << "[EntityEnd]\n";
-    }
-    of << "[EntitiesEnd]\n";
+	glm::vec4 decode(string value) {
+		std::stringstream stream(value);
 
-    of.close();
-}
+		glm::vec4 vec;
+		stream >> vec.x;	
+		stream >> vec.y;	
+		stream >> vec.z;	
+		stream >> vec.w;	
 
-void SceneFile::write(std::ofstream &of, glm::vec3 vec) {
-    of << vec.x << " " << vec.y << " " << vec.z << "\n";
-}
+		return vec;
+	}
+};
 
-void SceneFile::write(std::ofstream &of, glm::vec4 vec) {
-    of << vec.x << " " << vec.y << " " << vec.z << " " << vec.w << "\n";
-}
+struct ConfigValue {
+	string data;
 
-void SceneFile::write(std::ofstream &of, f32 value) {
-    of << value << "\n";
-}
+	template <typename T>
+	ConfigValue &operator=(const T &value) {
+		ConfigValueEncoder<T> encoder;
+		data = encoder.encode(value);
+		return *this;
+	}
 
-void SceneFile::write(std::ofstream &of, bool value) {
-    string val = value ? "true" : "false";
-    of << val << "\n";
-}
+	template <typename T>
+	T as() {
+		ConfigValueEncoder<T> encoder;
+		return encoder.decode(data);
+	}
+};
 
-ProjectFile::ProjectFile(string path, Project *project)
-    : path(path), project(project) {
-}
+struct ConfigSection {
+	map<string, ConfigValue> values;
 
-void ProjectFile::read() {
-    std::ifstream file(path);
+	ConfigValue &operator[](string name) {
+		return values[name];
+	}
+};
 
-    Assets *assets = project->assets;
+struct Config {
+	string path;
+	map<string, ConfigSection> sections;
 
-    string line;
+	Config(string path) : path(path) {
+	}
 
-    while (std::getline(file, line)) {
-        if (line == "[Project]") {
-            std::getline(file, line);
-            project->name = line;
-        }
-    }
-}
+	ConfigSection &operator[](string name) {
+		return sections[name];
+	}
 
-void ProjectFile::write() {
-    std::ofstream of(path);
+	bool has(string name) {
+		return sections.find(name) != sections.end();
+	}
 
-    of << "[Project]\n";
-    of << project->name << "\n";
-}
+	bool read() {
+		FILE *file = fopen(path.c_str(), "r");
+		if (!file) {
+			return false;
+		}
+
+		const u32 max_buffer_size = 512;
+		char line_buffer[max_buffer_size];
+		char buffer[max_buffer_size];
+
+		ConfigSection *current_section;
+
+		while (!feof(file)) {
+			fgets(line_buffer, max_buffer_size, file);
+
+			if (line_buffer[0] == '\n') {
+				continue;
+			} else if (line_buffer[0] == '[') {
+				s32 start = 1;
+				s32 pos = 0;
+				s32 line_buffer_length = strlen(line_buffer);
+
+				while (pos < line_buffer_length && line_buffer[pos] != ']') {
+					pos++;
+				}
+
+				if (pos == line_buffer_length) {
+					assert(0 && "Didn't find closing ']'");
+					return false;
+				}
+
+				memcpy(buffer, line_buffer + start, pos - start);
+				buffer[pos - 1] = 0;
+
+				string name = string(buffer);
+
+				current_section = &sections[name];
+			} else {
+				s32 start = 0;
+				s32 pos = 0;
+				s32 line_buffer_length = strlen(line_buffer);
+
+				while (pos < line_buffer_length && line_buffer[pos] != '=') {
+					pos++;
+				}
+
+				if (pos == line_buffer_length) {
+					assert(0 && "Didn't find '='");
+					return false;
+				}
+
+				memcpy(buffer, line_buffer + start, pos - start);
+				buffer[pos] = 0;
+
+				string name = string(buffer);
+
+				pos++; // skip '='
+				start = pos;
+				
+				while (pos < line_buffer_length && line_buffer[pos] != '\n') {
+					pos++;
+				}
+
+				if (pos == line_buffer_length) {
+					assert(0 && "Didn't find new line '\n'");
+					return false;
+				}
+
+				memcpy(buffer, line_buffer + start, pos - start);
+				buffer[pos - start] = 0;
+
+				string value = string(buffer);
+			
+				(*current_section)[name] = value;
+			}
+		}
+
+		fclose(file);
+		return true;
+	}
+
+	bool write() {
+		FILE *file = fopen(path.c_str(), "w");
+		if (!file) {
+			return false;
+		}
+
+		for (auto &section : sections) {
+			fprintf(file, "[%s]\n", section.first.c_str());
+			
+			for (auto &value : section.second.values) {
+				fprintf(file, "%s=%s\n", value.first.c_str(), value.second.data.c_str());
+			}
+
+			putc('\n', file);
+		}
+
+		fclose(file);
+		return true;
+	}
+};
 
 Project::Project(string path)
     : path(path) {
@@ -214,8 +288,10 @@ void Project::load() {
     string project_file = path + "Project.yak";
 
     if (std::filesystem::is_regular_file(project_file)) {
-        ProjectFile pf(project_file, this);
-        pf.read();
+		Config config(project_file);
+		config.read();
+
+		name = config["Project"]["Name"].as<string>();
     }
 
     log_info("Loaded Project '%s'", name.c_str());
@@ -223,16 +299,79 @@ void Project::load() {
 
 void Project::save() {
     string project_file = path + "Project.yak";
-    ProjectFile pf(project_file, this);
-    pf.write();
+
+	Config config(project_file);
+	config["Project"]["Name"] = name;
+	config.write();
 
     log_info("Saved Project '%s'", name.c_str());
 }
 
 Scene *load_scene_file(string path, Assets *assets) {
     Scene *scene = new Scene(path);
-    SceneFile sf(path, scene, assets);
-    sf.read();
+
+	Config config(path);
+	config.read();
+	
+	s32 entity_count = config["Entities"]["Count"].as<s32>();
+
+	for (s32 i = 0; i < entity_count; ++i) {
+		string name = "Entity" + std::to_string(i + 1);
+
+		string tag = config[name]["Tag"].as<string>();
+		Entity entity = scene->create_entity(tag);
+
+		string transform_id = name + "_Transform";
+		if (config.has(transform_id)) {
+			auto &transform = config[transform_id];
+			auto translation = transform["Translation"].as<glm::vec3>();
+			auto rotation = transform["Rotation"].as<glm::vec3>();
+			auto scale = transform["Scale"].as<glm::vec3>();
+
+			entity.add<TransformComponent>(
+				TransformComponent(translation, rotation, scale)
+			);
+		}
+
+		string renderer_id = name + "_Renderer";
+		if (config.has(renderer_id)) {
+			auto &renderer = config[renderer_id];
+
+			Mesh *mesh = Meshes::quad;
+
+			string texture_path = renderer["Texture"].as<string>();
+			Texture *texture = 0;
+			if (texture_path != "<None>") {
+				texture = assets->load_texture(texture_path);
+			}
+
+			auto color = renderer["Color"].as<glm::vec4>();
+
+			entity.add<RendererComponent>(
+				RendererComponent(
+					mesh,
+					texture,
+					color
+				)
+			);
+		}
+
+		string camera_id = name + "_Camera";
+		if (config.has(camera_id)) {
+			auto &camera = config[camera_id];
+
+			auto position = camera["Position"].as<glm::vec3>();
+			auto rotation = camera["Rotation"].as<f32>();
+			auto is_main_camera = camera["IsMain"].as<bool>();
+
+			entity.add<CameraComponent>(CameraComponent());
+
+			auto &component = entity.get<CameraComponent>();
+			component.position = position;
+			component.rotation = rotation;
+			component.is_main_camera = is_main_camera;
+		}
+	}
 
     log_info("Loaded Scene '%s'", path.c_str());
 
@@ -240,8 +379,54 @@ Scene *load_scene_file(string path, Assets *assets) {
 }
 
 void save_scene_file(Scene *scene, Assets *assets) {
-    SceneFile sf(scene->path, scene, assets);
-    sf.write();
+	Config config(scene->path);
 
+	s32 entity_count = scene->entity_map.size();
+	config["Entities"]["Count"] = entity_count;
+
+	s32 i = 1;
+	for (auto &entities : scene->entity_map) {
+		auto &entity = entities.second;
+
+		auto name = "Entity" + std::to_string(i);
+		config[name]["Tag"] = entity.get<TagComponent>().tag;
+
+		if (entity.has<TransformComponent>()) {
+			auto &tc = entity.get<TransformComponent>();
+			auto &transform = config[name + "_Transform"];
+
+			transform["Translation"] = tc.translation;
+			transform["Rotation"] = tc.rotation;
+			transform["Scale"] = tc.scale;
+		}
+
+		if (entity.has<RendererComponent>()) {
+			auto &rc = entity.get<RendererComponent>();
+			auto &renderer = config[name + "_Renderer"];
+
+			renderer["Mesh"] = "Quad";
+
+            if (rc.texture) {
+				renderer["Texture"] = rc.texture->path;
+            } else {
+				renderer["Texture"] = "<None>";
+            }
+
+			renderer["Color"] = rc.color;
+		}
+
+		if (entity.has<CameraComponent>()) {
+			auto &cc = entity.get<CameraComponent>();
+			auto &camera = config[name + "_Camera"];
+
+			camera["Position"] = cc.position;
+			camera["Rotation"] = cc.rotation;
+			camera["IsMain"] = cc.is_main_camera;
+		}
+
+		i++;
+	}
+
+	config.write();
     log_info("Saved Scene '%s'", scene->path.c_str());
 }

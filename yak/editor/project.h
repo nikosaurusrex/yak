@@ -7,35 +7,6 @@
 
 #include "entity/scene.h"
 
-struct SceneFile {
-    string path;
-    Scene *scene;
-    Assets *assets;
-
-    SceneFile(string path, Scene *scene, Assets *assets);
-
-    void read();
-    glm::vec3 read_vec3(std::ifstream &inf);
-    glm::vec4 read_vec4(std::ifstream &inf);
-
-    void write();
-    void write(std::ofstream &of, glm::vec3 vec);
-    void write(std::ofstream &of, glm::vec4 vec);
-    void write(std::ofstream &of, f32 value);
-    void write(std::ofstream &of, bool value);
-};
-
-struct Project;
-struct ProjectFile {
-    string path;
-    Project *project;
-
-    ProjectFile(string path, Project *project);
-
-    void read();
-    void write();
-};
-
 struct Project {
     string path;
     string name;
