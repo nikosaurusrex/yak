@@ -10,6 +10,7 @@
 
 #include "gfx/mesh.h"
 #include "gfx/texture.h"
+#include "script/script.h"
 
 struct TagComponent {
     string tag;
@@ -88,6 +89,10 @@ struct CameraComponent {
 
         view = glm::inverse(transform);
     }
+};
+
+struct ScriptComponent {
+	Script *script;
 };
 
 #endif

@@ -235,6 +235,7 @@ void PropertiesPanel::render(Scene *scene, Entity entity) {
         render_add_component<TransformComponent>(entity, "Transform");
         render_add_component<RendererComponent>(entity, "Renderer");
         render_add_component<CameraComponent>(entity, "Camera");
+        render_add_component<ScriptComponent>(entity, "Script");
 
         ImGui::EndPopup();
     }
@@ -316,6 +317,9 @@ void PropertiesPanel::render_components(Entity entity) {
             component.is_main_camera = true;
         }
     });
+	
+	render_component<ScriptComponent>(entity, "Script", [](auto &component) {
+	});
 
     ImGui::PopID();
 }
