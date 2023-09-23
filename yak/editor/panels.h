@@ -79,6 +79,7 @@ struct ContentBrowser {
     Editor *editor;
     Texture *img_file;
     Texture *img_folder;
+    Texture *img_script;
     fs::path project_path;
     fs::path path;
 

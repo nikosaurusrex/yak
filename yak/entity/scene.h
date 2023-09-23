@@ -3,15 +3,20 @@
 
 #include "entity/ecs.h"
 #include "gfx/texture.h"
+#include "script/script.h"
 
 struct Assets {
     string assets_path;
     map<string, Texture *> textures;
+    map<string, Script *> scripts;
 
     Assets(string assets_path);
 
     Texture *load_texture(string path);
-    Texture *get(string path);
+    Texture *get_texture(string path);
+
+    Script *load_script(string path);
+    Script *get_script(string path);
 };
 
 struct Scene {

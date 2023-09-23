@@ -318,7 +318,39 @@ void PropertiesPanel::render_components(Entity entity) {
         }
     });
 	
-	render_component<ScriptComponent>(entity, "Script", [](auto &component) {
+	render_component<ScriptComponent>(entity, "Script", [this, assets](auto &component) {
+        bool remove = render_property("Script", true, [&component, assets] {
+            const char *script_preview = "<None>";
+            static int script_selected = 0;
+            if (component.script) {
+                auto tex_name = fs::path(component.script->path).filename();
+                script_preview = tex_name.c_str();
+            }
+            if (ImGui::BeginCombo("##script", script_preview, 0)) {
+                s32 i = 0;
+                for (auto kv : assets->scripts) {
+                    bool selected = (script_selected == i); 
+                    auto tex_name = fs::path(kv.first).filename();
+                    if (ImGui::Selectable(tex_name.c_str(), selected)) {
+                        script_selected = i;
+                        component.script = kv.second;
+                    }
+
+                    if (selected)
+                        ImGui::SetItemDefaultFocus();
+
+                    i++;
+                }
+
+                ImGui::EndCombo();
+            }
+
+			if (ImGui::Button("Recompile")) {
+			}
+        });
+        if (remove) {
+            component.script = 0;
+        }
 	});
 
     ImGui::PopID();
@@ -471,6 +503,7 @@ ContentBrowser::~ContentBrowser() {
 void ContentBrowser::init() {
     img_file = new Texture("yak/assets/textures/file.png", GL_RGBA);
     img_folder = new Texture("yak/assets/textures/folder.png", GL_RGBA);
+    img_script = new Texture("yak/assets/textures/script.png", GL_RGBA);
 }
 
 void ContentBrowser::render() {
@@ -550,11 +583,16 @@ void ContentBrowser::render() {
         ImGui::PushID(name.c_str());
 
         if (ext == ".png") {
-            Texture *tex = assets->get(file_path);
+            Texture *tex = assets->get_texture(file_path);
             if (tex) {
                 img = tex;
             }
-        }
+        } else if (ext == ".cpp") {
+            Script *script = assets->get_script(file_path);
+            if (script) {
+                img = img_script;
+            }
+		}
 
         ImGui::ImageButton((ImTextureID) img->id, { icon_size, icon_size }, { 0, 1 }, { 1, 0 });
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
@@ -563,6 +601,8 @@ void ContentBrowser::render() {
                 editor->switch_scene(scene);
             } else if (ext == ".png") {
                 assets->load_texture(file_path);
+            } else if (ext == ".cpp") {
+                assets->load_script(file_path);
             }
         }
 

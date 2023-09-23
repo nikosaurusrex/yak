@@ -371,6 +371,20 @@ Scene *load_scene_file(string path, Assets *assets) {
 			component.rotation = rotation;
 			component.is_main_camera = is_main_camera;
 		}
+
+		string script_id = name + "_Script";
+		if (config.has(script_id)) {
+			auto &script_component = config[script_id];
+
+			auto path = script_component["Path"].as<string>();
+
+			Script *script = 0;
+			if (path != "<None>") {
+				script = assets->load_script(path);
+			}
+
+			entity.add<ScriptComponent>(ScriptComponent(script));
+		}
 	}
 
     log_info("Loaded Scene '%s'", path.c_str());
@@ -424,6 +438,12 @@ void save_scene_file(Scene *scene, Assets *assets) {
 			camera["IsMain"] = cc.is_main_camera;
 		}
 
+		if (entity.has<ScriptComponent>()) {
+			auto &cc = entity.get<ScriptComponent>();
+			auto &camera = config[name + "_Script"];
+
+			camera["Path"] = cc.script->path;
+		}
 		i++;
 	}
 

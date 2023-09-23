@@ -15,9 +15,29 @@ Texture *Assets::load_texture(string path) {
     return texture;
 }
 
-Texture *Assets::get(string path) {
+Texture *Assets::get_texture(string path) {
     auto it = textures.find(path);
     if (it != textures.end()) {
+        return it->second;
+    }
+    
+    return 0;
+}
+
+Script *Assets::load_script(string path) {
+    auto it = scripts.find(path);
+    if (it != scripts.end()) {
+        return it->second;
+    }
+
+	Script *script = new Script(path);
+    scripts.insert({path, script});
+    return script;
+}
+
+Script *Assets::get_script(string path) {
+    auto it = scripts.find(path);
+    if (it != scripts.end()) {
         return it->second;
     }
     

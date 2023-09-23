@@ -93,6 +93,14 @@ struct CameraComponent {
 
 struct ScriptComponent {
 	Script *script;
+
+	ScriptComponent() 
+		: script(0) {
+	}
+
+	ScriptComponent(Script *script) 
+		: script(script) {
+	}
 };
 
 #endif
