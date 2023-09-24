@@ -33,8 +33,8 @@ void RendererImGui::init(GLFWwindow *window) {
         0
     };
     
-    // io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 18);
-    io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/DejaVuSans.ttf", 16, 0, ranges);
+    io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/Roboto.ttf", 18);
+    // io.FontDefault = io.Fonts->AddFontFromFileTTF("yak/assets/fonts/DejaVuSans.ttf", 16, 0, ranges);
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -177,6 +177,7 @@ void Editor::init() {
     RendererImGui::init(window->handle);
 
     scene_view->init();
+    properties_panel->init();
     content_browser->init();
 }
 
@@ -270,7 +271,7 @@ void Editor::handle_event(Event event) {
         } break;
         case Event::KEY: {
             if (event.action == GLFW_RELEASE) {
-                if (event.mods & GLFW_MOD_SUPER) {
+                if ((event.mods & GLFW_MOD_SUPER) || (event.mods & GLFW_MOD_CONTROL)) {
                     if (event.button == GLFW_KEY_S) {
                         project->save();
                         if (engine->scene) {
@@ -289,8 +290,8 @@ void Editor::handle_event(Event event) {
 }
 
 void run_editor() {
-    Window *window = new Window("Engine", 1920, 1080);
-    Project *project = new Project("/Users/niko/Desktop/example/");
+    Window *window = new Window("Engine", 1600, 900);
+    Project *project = new Project("C:\\Users\\nikol\\Desktop\\Example\\");
 
     Editor editor(window, project);
 

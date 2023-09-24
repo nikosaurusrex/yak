@@ -1,7 +1,7 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include "yakpch.h"
+#include "common.h"
 
 #include "core/event.h"
 #include "editor/panels.h"

@@ -1,7 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "yakpch.h"
+#include "common.h"
 
 struct Texture {
     string path;

@@ -83,16 +83,12 @@ void Window::create() {
     glfwSetWindowPos(handle, vid_mode->width / 2 - width / 2, vid_mode->height / 2 - height / 2);
     glfwMakeContextCurrent(handle);
 
+    glewInit();
+
     log_info("OpenGL Info:");
     log_info("  Vendor: %s", glGetString(GL_VENDOR));
     log_info("  Renderer: %s", glGetString(GL_RENDERER));
     log_info("  Version: %s", glGetString(GL_VERSION));
-
-#ifdef _WIN32
-    if (glewInit() != GLEW_OK) {
-        log_fatal("Failed to initialize GLEW!");
-    }
-#endif
 
     glfwSetWindowUserPointer(handle, 0);
 

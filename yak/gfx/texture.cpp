@@ -29,14 +29,6 @@ void Texture::load(string file_path, GLint format) {
     glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-#ifdef _WIN32
-    if (glewIsSupported("GL_EXT_texture_filter_anisotropic")) {
-        GLfloat anisoSetting = 0.0f;
-        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisoSetting);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoSetting);
-    }
-#endif
-
     glBindTexture(GL_TEXTURE_2D, 0);
 
     stbi_image_free(image);

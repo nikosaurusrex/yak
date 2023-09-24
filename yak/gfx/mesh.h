@@ -1,7 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "yakpch.h"
+#include "common.h"
 
 struct Mesh {
     GLuint vao;

@@ -1,6 +1,8 @@
 #ifndef SCENE_H
 #define SCENE_H
 
+#include "common.h"
+
 #include "entity/ecs.h"
 #include "gfx/texture.h"
 #include "script/script.h"

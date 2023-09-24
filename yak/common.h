@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,14 +12,14 @@
 #include <utility>
 #include <vector>
 
-#ifdef _WIN32
-#define GLEW_STATIC
-    #include <glew/glew.h>
-#endif
-
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
 #include <OpenGL/gl3ext.h>
+#endif
+
+#ifdef _WIN64
+#define GLEW_STATIC
+#include "GL/glew.h"
 #endif
 
 #include <glfw/glfw3.h>

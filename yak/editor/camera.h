@@ -1,7 +1,7 @@
 #ifndef EDITOR_CAMERA_H
 #define EDITOR_CAMERA_H
 
-#include "yakpch.h"
+#include "common.h"
 
 #include "glm/glm.hpp"
 
@@ -11,8 +11,8 @@ struct Camera {
 
     f32 fov;
     f32 aspect;
-    f32 near;
-    f32 far;
+    f32 near = 0.0f;
+    f32 far = 0.0f;
 
     f32 yaw;
     f32 pitch;

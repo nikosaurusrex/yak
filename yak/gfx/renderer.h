@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "yakpch.h"
+#include "common.h"
 
 #include "entity/scene.h"
 

@@ -1,6 +1,6 @@
 #include "log.h"
 
-#include "yakpch.h"
+#include "common.h"
 
 void log_fatal(const char *format, ...) {
     va_list args;

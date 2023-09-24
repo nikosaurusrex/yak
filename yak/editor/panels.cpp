@@ -209,6 +209,14 @@ PropertiesPanel::PropertiesPanel(Editor *editor, Assets *assets)
     : editor(editor), assets(assets) {
 }
 
+PropertiesPanel::~PropertiesPanel() {
+    delete img_remove;
+}
+
+void PropertiesPanel::init() {
+    img_remove = new Texture("yak/assets/textures/remove.png", GL_RGBA);
+}
+
 void PropertiesPanel::render(Scene *scene, Entity entity) {
     ImGui::Begin("Properties");
 
@@ -276,14 +284,16 @@ void PropertiesPanel::render_components(Entity entity) {
             static int texture_selected = 0;
             if (component.texture) {
                 auto tex_name = fs::path(component.texture->path).filename();
-                texture_preview = tex_name.c_str();
+                auto texture_preview_str = tex_name.string();
+                /* TODO: Check memory issue */
+                texture_preview = strdup(texture_preview_str.c_str());
             }
             if (ImGui::BeginCombo("##texture", texture_preview, 0)) {
                 s32 i = 0;
                 for (auto kv : assets->textures) {
                     bool selected = (texture_selected == i); 
                     auto tex_name = fs::path(kv.first).filename();
-                    if (ImGui::Selectable(tex_name.c_str(), selected)) {
+                    if (ImGui::Selectable(tex_name.string().c_str(), selected)) {
                         texture_selected = i;
                         component.texture = kv.second;
                     }
@@ -320,18 +330,23 @@ void PropertiesPanel::render_components(Entity entity) {
 	
 	render_component<ScriptComponent>(entity, "Script", [this, assets](auto &component) {
         bool remove = render_property("Script", true, [&component, assets] {
+            if (ImGui::Button("Recompile")) {
+            }
+
             const char *script_preview = "<None>";
             static int script_selected = 0;
             if (component.script) {
-                auto tex_name = fs::path(component.script->path).filename();
-                script_preview = tex_name.c_str();
+                fs::path script_name = fs::path(component.script->path).filename();
+                auto script_name_str = script_name.string();
+                /* TODO: Check memory issue */
+                script_preview = strdup(script_name_str.c_str());
             }
             if (ImGui::BeginCombo("##script", script_preview, 0)) {
                 s32 i = 0;
                 for (auto kv : assets->scripts) {
                     bool selected = (script_selected == i); 
                     auto tex_name = fs::path(kv.first).filename();
-                    if (ImGui::Selectable(tex_name.c_str(), selected)) {
+                    if (ImGui::Selectable(tex_name.string().c_str(), selected)) {
                         script_selected = i;
                         component.script = kv.second;
                     }
@@ -344,9 +359,6 @@ void PropertiesPanel::render_components(Entity entity) {
 
                 ImGui::EndCombo();
             }
-
-			if (ImGui::Button("Recompile")) {
-			}
         });
         if (remove) {
             component.script = 0;
@@ -380,10 +392,11 @@ void PropertiesPanel::render_component(Entity entity, string name, Callback call
 
         ImGuiIO& io = ImGui::GetIO();
         f32 font_size = io.FontDefault->FontSize;
-        f32 remove_button_size = font_size + 4.0f * 2.0f;
+        f32 remove_button_size = font_size;
         ImGui::SameLine(region.x - remove_button_size * 0.5f);
         bool remove = false;
-        if (ImGui::Button("\u2715", ImVec2{ remove_button_size, remove_button_size })) {
+
+        if (ImGui::ImageButton((ImTextureID) img_remove->id, ImVec2{ remove_button_size, remove_button_size })) {
             remove = true;
         }
 
@@ -415,7 +428,7 @@ bool PropertiesPanel::render_property(const char *name, bool has_remove_button, 
     if (has_remove_button) {
         ImGuiIO& io = ImGui::GetIO();
         f32 font_size = io.FontDefault->FontSize;
-        remove_button_size = font_size + 4.0f * 2.0f;
+        remove_button_size = font_size;
         width -= remove_button_size;
     }
 
@@ -429,7 +442,7 @@ bool PropertiesPanel::render_property(const char *name, bool has_remove_button, 
     if (has_remove_button) {
         ImGui::SameLine(0.0f, 0.0f);
 
-        if (ImGui::Button("\u2715", ImVec2{ remove_button_size, remove_button_size })) {
+        if (ImGui::ImageButton((ImTextureID) img_remove->id, ImVec2{remove_button_size, remove_button_size})) {
             remove = true;
         }
     }
@@ -490,7 +503,6 @@ void Toolbar::render(Editor *editor) {
     ImGui::End();
 }
 
-
 ContentBrowser::ContentBrowser(Editor *editor, string project_path)
     : editor(editor), project_path(project_path), path(project_path) {
 }
@@ -498,19 +510,23 @@ ContentBrowser::ContentBrowser(Editor *editor, string project_path)
 ContentBrowser::~ContentBrowser() {
     delete img_file;
     delete img_folder;
+    delete img_script;
+    delete img_back;
 }
 
 void ContentBrowser::init() {
     img_file = new Texture("yak/assets/textures/file.png", GL_RGBA);
     img_folder = new Texture("yak/assets/textures/folder.png", GL_RGBA);
     img_script = new Texture("yak/assets/textures/script.png", GL_RGBA);
+    img_back = new Texture("yak/assets/textures/back.png", GL_RGBA);
 }
 
 void ContentBrowser::render() {
     ImGui::Begin("Content Browser");
 
+
     f32 font_size = ImGui::GetFontSize();
-    if (ImGui::Button("\u21A9")) {
+    if (ImGui::ImageButton((ImTextureID)img_back->id, { font_size, font_size })) {
         if (!fs::equivalent(project_path, path)) {
             path = path.parent_path();
         }
@@ -518,7 +534,8 @@ void ContentBrowser::render() {
 
     ImGui::SameLine();
     auto relative_path = fs::relative(path, project_path);
-    ImGui::Text("%s", relative_path.c_str());
+    auto relative_path_str = relative_path.string();
+    ImGui::Text("%s", relative_path_str.c_str());
 
     f32 icon_size = 80.0f;
     f32 margin = 10.0f;
@@ -583,12 +600,12 @@ void ContentBrowser::render() {
         ImGui::PushID(name.c_str());
 
         if (ext == ".png") {
-            Texture *tex = assets->get_texture(file_path);
+            Texture *tex = assets->get_texture(file_path.string());
             if (tex) {
                 img = tex;
             }
         } else if (ext == ".cpp") {
-            Script *script = assets->get_script(file_path);
+            Script *script = assets->get_script(file_path.string());
             if (script) {
                 img = img_script;
             }
@@ -600,9 +617,9 @@ void ContentBrowser::render() {
                 Scene *scene = load_scene_file(file_path.string(), editor->project->assets);
                 editor->switch_scene(scene);
             } else if (ext == ".png") {
-                assets->load_texture(file_path);
+                assets->load_texture(file_path.string());
             } else if (ext == ".cpp") {
-                assets->load_script(file_path);
+                assets->load_script(file_path.string());
             }
         }
 
@@ -660,7 +677,7 @@ void ContentBrowser::item_popup(string &text_input_mode, string &text_input_cont
 
             open_text_input = true;
             text_input_mode = "rename";
-            text_input_context = file_path;
+            text_input_context = file_path.string();
         }
 
         if (ImGui::MenuItem("Delete")) {

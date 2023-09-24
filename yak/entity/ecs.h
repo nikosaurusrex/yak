@@ -1,7 +1,7 @@
 #ifndef ECS_H
 #define ECS_H
 
-#include "yakpch.h"
+#include "common.h"
 
 #include "entity/components.h"
 #include "gfx/mesh.h"

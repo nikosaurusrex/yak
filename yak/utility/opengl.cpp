@@ -1,6 +1,6 @@
 #include "opengl.h"
 
-#include "yakpch.h"
+#include "common.h"
 
 bool check_opengl_error() {
     bool found = false;

@@ -24,13 +24,10 @@ project "Yak"
     kind "ConsoleApp"
 	language "C++"
 	cppdialect "C++20"
-	staticruntime "on"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir)
 	objdir ("bin/" .. outputdir .. "/temp")
-
-        pchheader "yakpch.h"
-	pchsource "yak/yakpch.cpp"
 
 	files
 	{
@@ -51,7 +48,8 @@ project "Yak"
         "vendor/glfw/include",
         "vendor/glm",
         "vendor/imgui",
-	"vendor/imguizmo"
+		"vendor/imguizmo",
+		"vendor/glew/include"
     }
 
     links {
@@ -59,8 +57,14 @@ project "Yak"
         "ImGui"
     }
 
-    filter "files:vendor/ImGuizmo/**.cpp"
-	flags { "NoPCH" }
+	defines {
+		GLFW_INCLUDE_NONE
+	}
+
+	filter { "system:windows" }
+		links { "opengl32.lib", "glew32s.lib" }
+		libdirs { "vendor/glew/libs" }
+		systemversion "latest"
 
     filter { "system:macosx" }
         defines { "GL_SILENCE_DEPRECATION" }

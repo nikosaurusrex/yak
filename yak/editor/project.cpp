@@ -5,6 +5,8 @@
 
 #include "entity/components.h"
 
+namespace fs = std::filesystem;
+
 template <typename T>
 struct ConfigValueEncoder {
 };
@@ -342,6 +344,7 @@ Scene *load_scene_file(string path, Assets *assets) {
 			string texture_path = renderer["Texture"].as<string>();
 			Texture *texture = 0;
 			if (texture_path != "<None>") {
+				texture_path = assets->assets_path + texture_path;
 				texture = assets->load_texture(texture_path);
 			}
 
@@ -380,6 +383,7 @@ Scene *load_scene_file(string path, Assets *assets) {
 
 			Script *script = 0;
 			if (path != "<None>") {
+				path = assets->assets_path + path;
 				script = assets->load_script(path);
 			}
 
@@ -421,7 +425,8 @@ void save_scene_file(Scene *scene, Assets *assets) {
 			renderer["Mesh"] = "Quad";
 
             if (rc.texture) {
-				renderer["Texture"] = rc.texture->path;
+				auto relative_path = fs::relative(rc.texture->path, assets->assets_path);
+				renderer["Texture"] = relative_path.string();
             } else {
 				renderer["Texture"] = "<None>";
             }
@@ -439,10 +444,11 @@ void save_scene_file(Scene *scene, Assets *assets) {
 		}
 
 		if (entity.has<ScriptComponent>()) {
-			auto &cc = entity.get<ScriptComponent>();
-			auto &camera = config[name + "_Script"];
+			auto &sc = entity.get<ScriptComponent>();
+			auto &script = config[name + "_Script"];
 
-			camera["Path"] = cc.script->path;
+			auto relative_path = fs::relative(sc.script->path, assets->assets_path);
+			script["Path"] = relative_path.string();
 		}
 		i++;
 	}

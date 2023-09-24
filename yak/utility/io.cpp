@@ -1,6 +1,6 @@
 #include "io.h"
 
-#include "yakpch.h"
+#include "common.h"
 
 char *read_entire_file(const char *file_path) {
     FILE *file = fopen(file_path, "rb");

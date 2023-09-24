@@ -1,7 +1,7 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
-#include "yakpch.h"
+#include "common.h"
 
 struct Framebuffer {
     s32 width;

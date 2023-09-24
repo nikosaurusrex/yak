@@ -1,7 +1,7 @@
 #ifndef SCRIPT_H
 #define SCRIPT_H
 
-#include <yakpch.h>
+#include <common.h>
 
 typedef void (*create_function_type)();
 typedef void (*destroy_function_type)();

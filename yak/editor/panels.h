@@ -50,10 +50,15 @@ struct SceneHierarchy {
 
 struct Assets;
 struct PropertiesPanel {
+    Texture *img_remove;
+
     Editor *editor;
     Assets *assets;
 
     PropertiesPanel(Editor *editor, Assets *assets);
+    ~PropertiesPanel();
+
+    void init();
 
     void render(Scene *scene, Entity entity);
 
@@ -80,6 +85,7 @@ struct ContentBrowser {
     Texture *img_file;
     Texture *img_folder;
     Texture *img_script;
+    Texture *img_back;
     fs::path project_path;
     fs::path path;
 
