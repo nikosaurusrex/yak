@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-typedef void (*set_function_type)(glm::vec3* position);
+typedef void (*set_function_type)(glm::vec3* position, bool *pressed);
 typedef void (*create_function_type)();
 typedef void (*destroy_function_type)();
 typedef void (*update_function_type)();

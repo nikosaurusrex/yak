@@ -10,6 +10,8 @@
 #include "gfx/renderer.h"
 #include "gfx/shader.h"
 
+bool Input::keys[256] = { false };
+
 Engine::Engine(Window *window) : window(window) {
     assets = new Assets("yak/assets/");
 }
@@ -93,7 +95,7 @@ void Engine::update() {
 		}
 
         if (script->update_function) {
-            script->set_function(&transform_component.translation);
+            script->set_function(&transform_component.translation, &Input::keys[0]);
             script->update_function();
         }
     }
@@ -153,6 +155,14 @@ void Engine::handle_event(Event event) {
             window->height = event.height;
                 
             /* TODO: RECALCULATE MAIN CAMERA */
+        } break;
+        case Event::KEY: {
+            if (event.action == GLFW_PRESS) {
+                Input::keys[event.button] = true;
+            }
+            if (event.action == GLFW_RELEASE) {
+                Input::keys[event.button] = false;
+            }
         } break;
         default:
             break;
