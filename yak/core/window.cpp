@@ -57,9 +57,14 @@ static void key_callback(GLFWwindow *handle, s32 key, s32 scancode, s32 action, 
 }
 
 Window::Window(const char *title, s32 width, s32 height)
-    : title(title), width(width), height(height) {}
+    : title(title), width(width), height(height) {
+
+	log_info("Create Window");
+}
 
 void Window::init() {
+	log_info("Init Window");
+
     if (!glfwInit()) {
         log_fatal("Failed to initialize GLFW!");
     }
@@ -83,12 +88,18 @@ void Window::create() {
     glfwSetWindowPos(handle, vid_mode->width / 2 - width / 2, vid_mode->height / 2 - height / 2);
     glfwMakeContextCurrent(handle);
 
+	glfwSwapInterval(1);
+
     glewInit();
 
-    log_info("OpenGL Info:");
-    log_info("  Vendor: %s", glGetString(GL_VENDOR));
-    log_info("  Renderer: %s", glGetString(GL_RENDERER));
-    log_info("  Version: %s", glGetString(GL_VERSION));
+    log_dev("OpenGL Info:");
+    log_dev("  Vendor: %s", glGetString(GL_VENDOR));
+    log_dev("  Renderer: %s", glGetString(GL_RENDERER));
+    log_dev("  Version: %s", glGetString(GL_VERSION));
+	log_dev("  Shading Language %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+	log_dev("GLFW Info:");
+	log_dev("  Version %s", glfwGetVersionString());
 
     glfwSetWindowUserPointer(handle, 0);
 

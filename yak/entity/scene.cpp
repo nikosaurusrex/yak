@@ -10,6 +10,8 @@ Texture *Assets::load_texture(string path) {
         return it->second;
     }
 
+	log_info("Load Texture '%s'", path.c_str());
+
     Texture *texture = new Texture(path, GL_RGBA);
     textures.insert({path, texture});
     return texture;
@@ -30,8 +32,11 @@ Script *Assets::load_script(string path) {
         return it->second;
     }
 
+	log_info("Load Script '%s'", path.c_str());
+
 	Script *script = new Script(path);
     scripts.insert({path, script});
+	script->load();
     return script;
 }
 

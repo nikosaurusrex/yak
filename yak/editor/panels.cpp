@@ -331,6 +331,9 @@ void PropertiesPanel::render_components(Entity entity) {
 	render_component<ScriptComponent>(entity, "Script", [this, assets](auto &component) {
         bool remove = render_property("Script", true, [&component, assets] {
             if (ImGui::Button("Recompile")) {
+                if (component.script) {
+                    component.script->recompile();
+                }
             }
 
             const char *script_preview = "<None>";

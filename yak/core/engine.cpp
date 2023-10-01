@@ -16,6 +16,8 @@ Engine::Engine(Window *window) : window(window) {
 
 Engine::Engine(Window *window, Assets *assets)
     : window(window), assets(assets) {
+
+	log_info("Create Engine");
 }
 
 Engine::~Engine() {
@@ -31,6 +33,8 @@ Engine::~Engine() {
 }
 
 void Engine::init() {
+	log_info("Init Engine");
+
     window->init();
     window->create();
 
@@ -41,6 +45,8 @@ void Engine::init() {
 }
 
 void Engine::run() {
+	log_info("Run Engine");
+
     running = true;
 }
 
@@ -59,8 +65,8 @@ void Engine::loop() {
 }
 
 void Engine::update() {
-    auto entities = scene->get_entities_with_component<CameraComponent>();
-    for (auto &entity : entities) {
+    auto camera_entities = scene->get_entities_with_component<CameraComponent>();
+    for (auto &entity : camera_entities) {
         auto &camera_component = entity.get<CameraComponent>();
         if (camera_component.is_main_camera) {
             camera_component.calculate_view_matrix();
@@ -68,6 +74,27 @@ void Engine::update() {
             Shaders::load_for_all("proj_mat", camera_component.projection);
             
             break;
+        }
+    }
+
+    auto script_entities = scene->get_entities_with_component<ScriptComponent>();
+    for (auto& entity : script_entities) {
+        if (!entity.has<TransformComponent>()) {
+            continue;
+        }
+
+        auto& script_component = entity.get<ScriptComponent>();
+        auto& transform_component = entity.get<TransformComponent>();
+
+        auto script = script_component.script;
+
+		if (!script->loaded) {
+			continue;
+		}
+
+        if (script->update_function) {
+            script->set_function(&transform_component.translation);
+            script->update_function();
         }
     }
 
@@ -114,6 +141,8 @@ void Engine::render() {
 }
 
 void Engine::stop() {
+	log_info("Log Engine");
+	
     running = false;
 }
 

@@ -146,6 +146,8 @@ void RendererImGui::end(s32 width, s32 height) {
 
 Editor::Editor(Window *window, Project *project) 
     : window(window), project(project) {
+	log_info("Create Editor");
+
     engine = new Engine(window, project->assets);
     scene_view = new SceneView(this, &selection);
     scene_hierarchy = new SceneHierarchy(&selection);
@@ -170,6 +172,8 @@ Editor::~Editor() {
 }
 
 void Editor::init() {
+	log_info("Init Editor");
+
     engine->init();
 
     project->load();
@@ -245,13 +249,26 @@ void Editor::switch_scene(Scene *scene) {
 }
 
 void Editor::switch_mode(u64 mode) {
+	if (!engine->scene) {
+		return;
+	}
+
     this->mode = mode;
     selection = {};
 
     if (mode == MODE_EDIT) {
+		Scene *scene = load_scene_file(engine->scene->path, project->assets);
+
+		delete engine->scene;
+		engine->scene = scene;
+
         Shaders::load_for_all("view_mat", scene_view->view_mat);
         Shaders::load_for_all("proj_mat", scene_view->proj_mat);
-    }
+    } else if (mode == MODE_PLAY) {
+		if (engine->scene) {
+			save_scene_file(engine->scene, project->assets);
+		}
+	}
 }
 
 void Editor::handle_event(Event event) {
@@ -290,8 +307,10 @@ void Editor::handle_event(Event event) {
 }
 
 void run_editor() {
+	log_info("Running Editor v1.0");
+
     Window *window = new Window("Engine", 1600, 900);
-    Project *project = new Project("C:\\Users\\nikol\\Desktop\\Example\\");
+    Project *project = new Project("C:\\Users\\work\\Desktop\\Example\\");
 
     Editor editor(window, project);
 
