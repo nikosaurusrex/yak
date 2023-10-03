@@ -310,7 +310,11 @@ void run_editor() {
 	log_info("Running Editor v1.0");
 
     Window *window = new Window("Engine", 1600, 900);
+#ifdef _WIN64
     Project *project = new Project("C:\\Users\\work\\Desktop\\Example\\");
+#else
+    Project *project = new Project("/Users/niko/Desktop/example/");
+#endif
 
     Editor editor(window, project);
 

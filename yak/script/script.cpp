@@ -58,7 +58,7 @@ void Script::load() {
 #else
 	handle = dlopen(path.c_str(), RTLD_NOW);
 
-	set_function = (create_function_type) dlsym(handle, "set");
+	set_function = (set_function_type) dlsym(handle, "set");
 	create_function = (create_function_type) dlsym(handle, "create");
 	destroy_function = (destroy_function_type) dlsym(handle, "destroy");
 	update_function = (update_function_type) dlsym(handle, "update");
@@ -84,9 +84,17 @@ void Script::recompile() {
 	const char *compiler = "clang++"; 
 	std::stringstream compile_cmd;
 
-	compile_cmd << compiler << " -shared -o "
-				<< compiled_path << " " << path;
+	compile_cmd << compiler;
 
+#ifdef _WIN64
+	compile_cmd << << " -shared -o ";
+#else
+	compile_cmd << " -dynamiclib -o ";
+#endif
+
+	compile_cmd << compiled_path << " " << path;
+
+	/* TODO: find better way to start subprocess */
 	system(compile_cmd.str().c_str());
 
 	load();

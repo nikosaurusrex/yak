@@ -90,7 +90,9 @@ void Window::create() {
 
 	glfwSwapInterval(1);
 
+#ifdef _WIN64
     glewInit();
+#endif
 
     log_dev("OpenGL Info:");
     log_dev("  Vendor: %s", glGetString(GL_VENDOR));
