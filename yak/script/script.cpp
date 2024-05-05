@@ -51,6 +51,8 @@ void Script::load() {
 	create_function = (create_function_type) GetProcAddress(lib, "create");
 	destroy_function = (destroy_function_type) GetProcAddress(lib, "destroy");
 	update_function = (update_function_type) GetProcAddress(lib, "update");
+	on_key_down_function = (on_key_function_type) GetProcAddress(lib, "key_down");
+	on_key_release_function = (on_key_function_type) GetProcAddress(lib, "key_release");
 
 	handle = lib;
 	loaded = true;
@@ -62,6 +64,8 @@ void Script::load() {
 	create_function = (create_function_type) dlsym(handle, "create");
 	destroy_function = (destroy_function_type) dlsym(handle, "destroy");
 	update_function = (update_function_type) dlsym(handle, "update");
+	on_key_down_function = (on_key_function_type) dlsym(handle, "key_down");
+	on_key_release_function = (on_key_function_type) dlsym(handle, "key_release");
 
 	loaded = true;
 #endif
@@ -87,7 +91,7 @@ void Script::recompile() {
 	compile_cmd << compiler;
 
 #ifdef _WIN64
-	compile_cmd << << " -shared -o ";
+	compile_cmd << " -shared -o ";
 #else
 	compile_cmd << " -dynamiclib -o ";
 #endif

@@ -6,10 +6,6 @@
 #include "entity/scene.h"
 #include "entity/components.h"
 
-struct Input {
-    static bool keys[256];
-};
-
 struct Assets;
 struct Scene;
 struct Window;

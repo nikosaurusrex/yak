@@ -10,8 +10,6 @@
 #include "gfx/renderer.h"
 #include "gfx/shader.h"
 
-bool Input::keys[256] = { false };
-
 Engine::Engine(Window *window) : window(window) {
     assets = new Assets("yak/assets/");
 }
@@ -80,13 +78,13 @@ void Engine::update() {
     }
 
     auto script_entities = scene->get_entities_with_component<ScriptComponent>();
-    for (auto& entity : script_entities) {
+    for (auto &entity : script_entities) {
         if (!entity.has<TransformComponent>()) {
             continue;
         }
 
-        auto& script_component = entity.get<ScriptComponent>();
-        auto& transform_component = entity.get<TransformComponent>();
+        auto &script_component = entity.get<ScriptComponent>();
+        auto &transform_component = entity.get<TransformComponent>();
 
         auto script = script_component.script;
 
@@ -94,8 +92,14 @@ void Engine::update() {
 			continue;
 		}
 
+        string tag = entity.get<TagComponent>().tag;
+        glm::vec3 *camera_pos = 0;
+        if (entity.has<CameraComponent>()) {
+            camera_pos = &entity.get<CameraComponent>().position;
+        }
+
         if (script->update_function) {
-            script->set_function(&transform_component.translation, &Input::keys[0]);
+            script->set_function(tag.c_str(), &transform_component, camera_pos);
             script->update_function();
         }
     }
@@ -158,10 +162,26 @@ void Engine::handle_event(Event event) {
         } break;
         case Event::KEY: {
             if (event.action == GLFW_PRESS) {
-                Input::keys[event.button] = true;
+                auto script_entities = scene->get_entities_with_component<ScriptComponent>();
+                for (auto &entity : script_entities) {
+                    auto &script_component = entity.get<ScriptComponent>();
+                    auto script = script_component.script;
+
+                    if (script->on_key_down_function) {
+                        script->on_key_down_function(event.button);
+                    }
+                }
             }
             if (event.action == GLFW_RELEASE) {
-                Input::keys[event.button] = false;
+                auto script_entities = scene->get_entities_with_component<ScriptComponent>();
+                for (auto &entity : script_entities) {
+                    auto &script_component = entity.get<ScriptComponent>();
+                    auto script = script_component.script;
+
+                    if (script->on_key_release_function) {
+                        script->on_key_release_function(event.button);
+                    }
+                }
             }
         } break;
         default:

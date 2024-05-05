@@ -10,7 +10,6 @@
 
 #include "gfx/mesh.h"
 #include "gfx/texture.h"
-#include "script/script.h"
 
 struct TagComponent {
     string tag;
@@ -91,6 +90,7 @@ struct CameraComponent {
     }
 };
 
+struct Script;
 struct ScriptComponent {
 	Script *script;
 
